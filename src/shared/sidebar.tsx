@@ -15,22 +15,28 @@ import { useErc7730Store } from "~/store/erc7730Provider";
 import SelectOperation from "./selectOperation";
 import { Button } from "~/components/ui/button";
 import { ModeToggle } from "~/components/ui/theme-switcher";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import useOperationStore from "~/store/useOperationStore";
 import ResetButton from "./resetButton";
+import { useNavigation } from "~/hooks/use-navigation";
 
 export function AppSidebar() {
-  const { getContractAddress } = useErc7730Store((s) => s);
+  const { getContractAddress, getDeployments } = useErc7730Store((s) => s);
   const router = useRouter();
-  const pathname = usePathname();
+  const { pathState } = useNavigation();
 
   const { validateOperation } = useOperationStore();
 
   const address = getContractAddress();
+  const deployments = getDeployments();
+
+  const getContractDisplayText = () => {
+    if (deployments.length === 0) return "No deployments configured";
+    if (deployments.length === 1) return address;
+    return `${deployments.length} chain deployments`;
+  };
 
   const isReviewAccessible = validateOperation.length > 0;
-
-  const isOperation = pathname === "/operations";
 
   return (
     <Sidebar>
@@ -45,14 +51,24 @@ export function AppSidebar() {
           <div className="flex flex-col gap-2">
             <h2 className="text-sm font-bold">Contract</h2>
             <div className="break-words rounded border border-neutral-300 bg-black/5 p-3 text-sm">
-              {address}
+              {getContractDisplayText()}
             </div>
           </div>
         </SidebarGroup>
         <SidebarSeparator />
 
-        {isOperation && (
+        {pathState.showNavigationSteps && (
           <>
+            <SidebarGroup>
+              <SidebarMenu>
+                <SidebarMenuButton onClick={() => router.push("/chains")}>
+                  Chains
+                </SidebarMenuButton>
+              </SidebarMenu>
+            </SidebarGroup>
+
+            <SidebarSeparator />
+
             <SidebarGroup>
               <SidebarMenu>
                 <SidebarMenuButton onClick={() => router.push("/metadata")}>

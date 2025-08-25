@@ -27,7 +27,7 @@ export function ReviewJson() {
       open={open}
       setOpen={setOpen}
     >
-      <div className="space-y-4 p-4 md:p-0">
+      <div className="space-y-4 overflow-hidden p-4 md:p-0">
         <p className="text-sm text-gray-600">
           Before submitting, please review your JSON. If everything looks good,
           copy it to your clipboard and create a pull request in the following

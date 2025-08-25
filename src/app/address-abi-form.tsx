@@ -9,6 +9,13 @@ import { Textarea } from "~/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import SampleAddressAbiCard from "./sampleAddressAbiCard";
 import { Button } from "~/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 import { ZodError } from "zod";
 import { useMutation } from "@tanstack/react-query";
@@ -16,11 +23,13 @@ import { useRouter } from "next/navigation";
 import { useErc7730Store } from "~/store/erc7730Provider";
 import useFunctionStore from "~/store/useOperationStore";
 import generateFromERC7730 from "./generateFromERC7730";
+import { SUPPORTED_CHAINS } from "~/lib/constants";
 import { Upload } from "lucide-react";
 
 const CardErc7730 = () => {
   const [input, setInput] = useState("");
   const [inputType, setInputType] = useState<"address" | "abi">("address");
+  const [chainId, setChainId] = useState(1);
   const [isDragOver, setIsDragOver] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const { setErc7730 } = useErc7730Store((state) => state);
@@ -35,6 +44,7 @@ const CardErc7730 = () => {
       generateFromERC7730({
         input,
         inputType,
+        chainId,
       }),
   });
 
@@ -47,7 +57,7 @@ const CardErc7730 = () => {
       useFunctionStore.persist.clearStorage();
 
       setErc7730(erc7730);
-      router.push("/metadata");
+      router.push("/chains");
     }
   };
 
@@ -147,6 +157,24 @@ const CardErc7730 = () => {
           <TabsContent value="address">
             <div className="space-y-4">
               <div className="space-y-2">
+                <Label htmlFor="chain-select">Chain</Label>
+                <Select
+                  value={chainId.toString()}
+                  onValueChange={(value) => setChainId(parseInt(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a chain" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SUPPORTED_CHAINS.map((chain) => (
+                      <SelectItem key={chain.id} value={chain.id.toString()}>
+                        {chain.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="eth-address">Contract Address</Label>
                 <Input
                   id="contract-address"
@@ -159,6 +187,24 @@ const CardErc7730 = () => {
           </TabsContent>
           <TabsContent value="abi">
             <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="chain-select">Chain</Label>
+                <Select
+                  value={chainId.toString()}
+                  onValueChange={(value) => setChainId(parseInt(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a chain" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SUPPORTED_CHAINS.map((chain) => (
+                      <SelectItem key={chain.id} value={chain.id.toString()}>
+                        {chain.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="abi">ABI</Label>
                 <div className="space-y-2">

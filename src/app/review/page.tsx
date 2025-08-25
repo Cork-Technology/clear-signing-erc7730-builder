@@ -1,5 +1,5 @@
 import { HydrateClient } from "~/trpc/server";
-import { BreadcrumbInfo } from "./breadCrumb";
+import { DynamicBreadcrumb } from "~/components/ui/dynamic-breadcrumb";
 import OperationCarousel from "./operationCarousel";
 import BackToEdit from "./backToEdit";
 import ReviewJson from "./reviewJson";
@@ -13,7 +13,7 @@ export default async function Home() {
         <div className="flex flex-col gap-4">
           <h1 className="text-2xl font-bold">Review Operations</h1>
           <div className="flew-row flex justify-between">
-            <BreadcrumbInfo />
+            <DynamicBreadcrumb />
 
             <div className="flex items-center gap-4">
               <OperationNotValidated />

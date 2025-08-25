@@ -20,6 +20,7 @@ import Devices from "./devices";
 import { Erc7730StoreContext, useErc7730Store } from "~/store/erc7730Provider";
 import { Card } from "~/components/ui/card";
 import type { Erc7730 } from "~/store/types";
+import { DynamicBreadcrumb } from "~/components/ui/dynamic-breadcrumb";
 
 const metaDataSchema = z.object({
   owner: z.string().min(1, {
@@ -113,8 +114,11 @@ const MetadataForm = () => {
           className="grid grid-cols-2 gap-10"
         >
           <div>
-            <div className="mb-20 flex w-full items-center justify-between">
+            <div className="mb-10 flex w-full items-center justify-between">
               <h1 className="text-2xl font-bold">Metadata</h1>
+            </div>
+            <div className="mb-10">
+              <DynamicBreadcrumb />
             </div>
 
             <Card className="mb-40 flex h-fit flex-col gap-6 p-6">
