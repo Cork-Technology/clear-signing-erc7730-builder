@@ -16,10 +16,13 @@ import { useRouter } from "next/navigation";
 import { useErc7730Store } from "~/store/erc7730Provider";
 import useFunctionStore from "~/store/useOperationStore";
 import generateFromERC7730 from "./generateFromERC7730";
+import { Upload } from "lucide-react";
 
 const CardErc7730 = () => {
   const [input, setInput] = useState("");
   const [inputType, setInputType] = useState<"address" | "abi">("address");
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
   const { setErc7730 } = useErc7730Store((state) => state);
   const router = useRouter();
 
@@ -51,6 +54,86 @@ const CardErc7730 = () => {
   const onTabChange = (value: string) => {
     setInputType(value as "address" | "abi");
     setInput("");
+    setFileError(null);
+    setIsDragOver(false);
+  };
+
+  const validateAndSetABI = async (file: File) => {
+    setFileError(null);
+
+    if (!file.type.includes("json") && !file.name.endsWith(".json")) {
+      setFileError("Please upload a JSON file");
+      return;
+    }
+
+    try {
+      const text = await file.text();
+
+      let parsedAbi: unknown;
+      try {
+        parsedAbi = JSON.parse(text);
+      } catch {
+        throw new Error("Invalid JSON format");
+      }
+
+      if (!Array.isArray(parsedAbi)) {
+        throw new Error("ABI must be an array");
+      }
+
+      if (parsedAbi.length > 0) {
+        const hasValidAbiStructure = parsedAbi.every(
+          (item: unknown) =>
+            typeof item === "object" &&
+            item !== null &&
+            typeof (item as Record<string, unknown>).type === "string",
+        );
+
+        if (!hasValidAbiStructure) {
+          throw new Error(
+            "Invalid ABI structure - each item must have a 'type' field",
+          );
+        }
+      }
+
+      setInput(JSON.stringify(parsedAbi, null, 2));
+    } catch (error) {
+      setFileError(
+        error instanceof Error ? error.message : "Failed to read file",
+      );
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0 && files[0]) {
+      const file = files[0];
+      await validateAndSetABI(file);
+    }
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0 && files[0]) {
+      const file = files[0];
+      await validateAndSetABI(file);
+    }
+    e.target.value = '';
   };
 
   return (
@@ -78,12 +161,44 @@ const CardErc7730 = () => {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="abi">ABI</Label>
-                <Textarea
-                  id="abi"
-                  placeholder="Paste your ABI here..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                />
+                <div className="space-y-2">
+                  <Textarea
+                    id="abi"
+                    placeholder="Paste your ABI here or drag & drop a JSON file..."
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className={`transition-colors ${
+                      isDragOver
+                        ? "border-2 border-dashed border-blue-400 bg-blue-50"
+                        : "border-input"
+                    }`}
+                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept=".json"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      id="abi-file-input"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById('abi-file-input')?.click()}
+                      className="flex items-center gap-2"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Upload JSON File
+                    </Button>
+                  </div>
+                  {fileError && (
+                    <p className="text-sm text-red-600">{fileError}</p>
+                  )}
+                </div>
               </div>
             </div>
           </TabsContent>
