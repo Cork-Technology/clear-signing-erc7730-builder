@@ -33,3 +33,15 @@ export function removeNullValues(obj: unknown): unknown {
 
   return obj;
 }
+
+export function buildFullPath(parentPath: string, fieldPath: string | null | undefined): string {
+  if (!fieldPath) {
+    return parentPath;
+  }
+
+  if (!parentPath) {
+    return fieldPath;
+  }
+
+  return parentPath.endsWith(".") ? `${parentPath}${fieldPath}` : `${parentPath}.${fieldPath}`;
+}
