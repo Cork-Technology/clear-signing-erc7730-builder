@@ -1,5 +1,6 @@
 import { type Operation } from "~/store/types";
 import { type OperationFormType } from "~/app/operations/editOperation";
+import { buildFullPath } from "./utils";
 
 export function updateOperationFromSchema(
   operation: Operation,
@@ -24,7 +25,7 @@ export function updateOperationFromSchema(
     parentPath = "",
   ) {
     fieldsArray.forEach((field) => {
-      const fullPath = `${parentPath}${field.path}`;
+      const fullPath = buildFullPath(parentPath, field.path);
       if ("fields" in field && field.fields.length > 0) {
         traverseAndUpdateFields(field.fields, fullPath);
       } else {

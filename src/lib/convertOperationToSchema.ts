@@ -1,12 +1,13 @@
 import { type OperationFormType } from "~/app/operations/editOperation";
 import { type Operation } from "~/store/types";
+import { buildFullPath } from "./utils";
 
 export function convertOperationToSchema(operation: Operation) {
   const fields: OperationFormType["fields"] = [];
 
   function traverseFields(fieldsArray: Operation["fields"], parentPath = "") {
     fieldsArray.forEach((field) => {
-      const fullPath = `${parentPath}${field.path}`;
+      const fullPath = buildFullPath(parentPath, field.path);
       if ("fields" in field && field.fields.length > 0) {
         traverseFields(field.fields, fullPath);
       } else {

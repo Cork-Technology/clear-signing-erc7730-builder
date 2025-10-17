@@ -1,4 +1,5 @@
 import { type Operation } from "~/store/types";
+import { buildFullPath } from "./utils";
 
 export function removeExcludedFields(operation: Operation): Operation {
   function traverseAndRemoveFields(
@@ -7,7 +8,7 @@ export function removeExcludedFields(operation: Operation): Operation {
     parentPath = "",
   ): Operation["fields"] {
     return fieldsArray.filter((field) => {
-      const fullPath = `${parentPath}${field.path}`;
+      const fullPath = buildFullPath(parentPath, field.path);
       if (excludedPaths.includes(fullPath)) {
         return false;
       }

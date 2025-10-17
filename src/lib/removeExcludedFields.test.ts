@@ -81,7 +81,7 @@ describe("removeExcludedFields", () => {
         },
       ],
       required: null,
-      excluded: ["#._maycPairs.[]mainTokenId"],
+      excluded: ["#._maycPairs.[].mainTokenId"],
     };
 
     const expectedUpdatedOperation: Operation = {
@@ -150,7 +150,7 @@ describe("removeExcludedFields", () => {
         },
       ],
       required: null,
-      excluded: ["#._maycPairs.[]mainTokenId"],
+      excluded: ["#._maycPairs.[].mainTokenId"],
     };
 
     const updatedOperation = removeExcludedFields(operation);
