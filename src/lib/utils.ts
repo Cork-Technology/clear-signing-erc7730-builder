@@ -18,7 +18,7 @@ export function removeNullValues(obj: unknown): unknown {
   }
 
   if (Array.isArray(obj)) {
-    return obj.map((item: unknown) => removeNullValues(item));
+    return obj.filter((item: unknown) => item !== null).map((item: unknown) => removeNullValues(item));
   }
 
   if (typeof obj === 'object') {
