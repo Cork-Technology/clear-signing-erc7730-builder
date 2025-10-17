@@ -14,6 +14,7 @@ import { TitleScreen } from "~/components/devices/titleScreen";
 import { Card } from "~/components/ui/card";
 import { type OperationMetadata } from "~/store/types";
 import { Button } from "~/components/ui/button";
+import { truncateLabel } from "~/lib/utils";
 
 interface Props {
   form: UseFormReturn<OperationFormType>;
@@ -54,7 +55,7 @@ const OperationInformation = ({ form, onContinue }: Props) => {
           <div className="flex h-full w-full flex-col justify-between text-black antialiased">
             <div className="overflow-hidden break-words px-2 pt-16">
               <TitleScreen
-                functionName={intent ?? "{functionName}"}
+                functionName={truncateLabel(intent ?? "{functionName}", 30)}
                 type={"transaction"}
               />
             </div>

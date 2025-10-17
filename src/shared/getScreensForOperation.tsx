@@ -1,5 +1,6 @@
 import { type OperationFormType } from "~/app/operations/editOperation";
 import matchFieldFormatToMockData from "~/lib/matchFormatToMockData";
+import { truncateLabel } from "~/lib/utils";
 import { type Operation } from "~/store/types";
 
 //removing 1 item from the screen because it's the static screen added before the form fields
@@ -39,7 +40,7 @@ export const getScreensForOperation = (
     if (!displayItem) continue;
 
     screen.push({
-      label,
+      label: truncateLabel(label, 20),
       isActive:
         activeFieldPath === displayItem.path || activeFieldPath === undefined,
       displayValue:

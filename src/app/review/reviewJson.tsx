@@ -7,14 +7,17 @@ import * as React from "react";
 import { ResponsiveDialog } from "~/components/ui/responsiveDialog";
 import { useErc7730Store } from "~/store/erc7730Provider";
 import { useToast } from "~/hooks/use-toast";
+import { removeNullValues } from "~/lib/utils";
 
 export function ReviewJson() {
   const [open, setOpen] = React.useState(false);
   const erc7730 = useErc7730Store((s) => s.finalErc7730);
   const { toast } = useToast();
 
+  const cleanedErc7730 = React.useMemo(() => removeNullValues(erc7730), [erc7730]);
+
   const handleCopyToClipboard = () => {
-    void navigator.clipboard.writeText(JSON.stringify(erc7730, null, 2));
+    void navigator.clipboard.writeText(JSON.stringify(cleanedErc7730, null, 2));
     toast({
       title: "JSON copied to clipboard!",
     });
@@ -43,7 +46,7 @@ export function ReviewJson() {
           .
         </p>
         <pre className="max-h-64 overflow-auto rounded border bg-gray-100 p-4 text-sm dark:text-black">
-          {JSON.stringify(erc7730, null, 2)}
+          {JSON.stringify(cleanedErc7730, null, 2)}
         </pre>
         <Button onClick={handleCopyToClipboard}>Copy JSON to Clipboard</Button>
       </div>
