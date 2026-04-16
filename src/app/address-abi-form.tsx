@@ -157,6 +157,33 @@ const CardErc7730 = () => {
     e.target.value = '';
   };
 
+  const validateSchemaText = (text: string): Erc7730 => {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      throw new Error("Invalid JSON format");
+    }
+
+    if (typeof parsed !== "object" || parsed === null) {
+      throw new Error("Schema must be a JSON object");
+    }
+
+    const schema = parsed as Record<string, unknown>;
+
+    if (!schema.context || typeof schema.context !== "object") {
+      throw new Error("Missing or invalid 'context' field");
+    }
+    if (!schema.metadata || typeof schema.metadata !== "object") {
+      throw new Error("Missing or invalid 'metadata' field");
+    }
+    if (!schema.display || typeof schema.display !== "object") {
+      throw new Error("Missing or invalid 'display' field");
+    }
+
+    return schema as unknown as Erc7730;
+  };
+
   const validateAndSetSchema = async (file: File) => {
     setFileError(null);
     setSchemaFile(null);
@@ -168,32 +195,26 @@ const CardErc7730 = () => {
 
     try {
       const text = await file.text();
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(text);
-      } catch {
-        throw new Error("Invalid JSON format");
-      }
-
-      if (typeof parsed !== "object" || parsed === null) {
-        throw new Error("Schema must be a JSON object");
-      }
-
-      const schema = parsed as Record<string, unknown>;
-
-      // Validate required ERC-7730 fields
-      if (!schema.context || typeof schema.context !== "object") {
-        throw new Error("Missing or invalid 'context' field");
-      }
-      if (!schema.metadata || typeof schema.metadata !== "object") {
-        throw new Error("Missing or invalid 'metadata' field");
-      }
-      if (!schema.display || typeof schema.display !== "object") {
-        throw new Error("Missing or invalid 'display' field");
-      }
-
-      setSchemaFile(schema as unknown as Erc7730);
+      const schema = validateSchemaText(text);
+      setSchemaFile(schema);
       setInput(file.name);
+    } catch (error) {
+      setFileError(
+        error instanceof Error ? error.message : "Failed to read file",
+      );
+    }
+  };
+
+  const handleSchemaTextChange = (text: string) => {
+    setInput(text);
+    setFileError(null);
+    setSchemaFile(null);
+
+    if (!text.trim()) return;
+
+    try {
+      const schema = validateSchemaText(text);
+      setSchemaFile(schema);
     } catch (error) {
       setFileError(
         error instanceof Error ? error.message : "Failed to read file",
@@ -326,12 +347,23 @@ const CardErc7730 = () => {
           <TabsContent value="schema">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="schema-upload">ERC-7730 Schema JSON</Label>
+                <Label>ERC-7730 Schema JSON</Label>
+                <Textarea
+                  placeholder="Paste your ERC-7730 JSON here..."
+                  value={schemaFile && !input.startsWith("{") ? "" : input}
+                  onChange={(e) => handleSchemaTextChange(e.target.value)}
+                  className="min-h-[160px] font-mono text-xs"
+                />
+                <div className="flex items-center gap-3">
+                  <div className="h-px flex-1 bg-border" />
+                  <span className="text-xs text-muted-foreground">or</span>
+                  <div className="h-px flex-1 bg-border" />
+                </div>
                 <div
-                  className={`flex min-h-[120px] cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed p-6 transition-colors ${
+                  className={`flex min-h-[80px] cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed p-4 transition-colors ${
                     isDragOver
                       ? "border-blue-400 bg-blue-50 dark:bg-blue-950"
-                      : schemaFile
+                      : schemaFile && !input.startsWith("{")
                         ? "border-green-400 bg-green-50 dark:bg-green-950"
                         : "border-input hover:border-muted-foreground/50"
                   }`}
@@ -340,20 +372,15 @@ const CardErc7730 = () => {
                   onDrop={handleSchemaDrop}
                   onClick={() => document.getElementById('schema-file-input')?.click()}
                 >
-                  <FileJson className="mb-2 h-8 w-8 text-muted-foreground" />
-                  {schemaFile ? (
+                  <FileJson className="mb-1 h-6 w-6 text-muted-foreground" />
+                  {schemaFile && !input.startsWith("{") ? (
                     <p className="text-sm text-green-600 dark:text-green-400">
                       Loaded: {input}
                     </p>
                   ) : (
-                    <>
-                      <p className="text-sm text-muted-foreground">
-                        Drop an ERC-7730 JSON file here or click to browse
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground/70">
-                        Must contain context, metadata, and display fields
-                      </p>
-                    </>
+                    <p className="text-sm text-muted-foreground">
+                      Drop a JSON file here or click to browse
+                    </p>
                   )}
                 </div>
                 <input
@@ -365,6 +392,11 @@ const CardErc7730 = () => {
                 />
                 {fileError && (
                   <p className="text-sm text-red-600">{fileError}</p>
+                )}
+                {schemaFile && (
+                  <p className="text-sm text-green-600 dark:text-green-400">
+                    Valid ERC-7730 schema detected
+                  </p>
                 )}
               </div>
             </div>
