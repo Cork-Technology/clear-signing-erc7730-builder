@@ -26,6 +26,7 @@ import generateFromERC7730 from "./generateFromERC7730";
 import { SUPPORTED_CHAINS } from "~/lib/constants";
 import { Upload, FileJson } from "lucide-react";
 import type { Erc7730 } from "~/store/types";
+import GitHubRepoBrowser from "./github-repo-browser";
 
 const CardErc7730 = () => {
   const [input, setInput] = useState("");
@@ -222,6 +223,21 @@ const CardErc7730 = () => {
     }
   };
 
+  const handleGitHubFileSelect = (content: string) => {
+    setFileError(null);
+    setSchemaFile(null);
+
+    try {
+      const schema = validateSchemaText(content);
+      setSchemaFile(schema);
+      setInput(JSON.stringify(schema, null, 2));
+    } catch (error) {
+      setFileError(
+        error instanceof Error ? error.message : "Not a valid ERC-7730 schema",
+      );
+    }
+  };
+
   const handleSchemaDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -390,6 +406,12 @@ const CardErc7730 = () => {
                   className="hidden"
                   id="schema-file-input"
                 />
+                <div className="flex items-center gap-3">
+                  <div className="h-px flex-1 bg-border" />
+                  <span className="text-xs text-muted-foreground">or</span>
+                  <div className="h-px flex-1 bg-border" />
+                </div>
+                <GitHubRepoBrowser onFileSelect={handleGitHubFileSelect} />
                 {fileError && (
                   <p className="text-sm text-red-600">{fileError}</p>
                 )}
