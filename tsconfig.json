@@ -39,5 +39,5 @@
     "vitest.config.mts",
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "**/api-types.ts"]
+  "exclude": ["node_modules", "**/api-types.ts", "out"]
 }

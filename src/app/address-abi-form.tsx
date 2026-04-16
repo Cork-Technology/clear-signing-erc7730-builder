@@ -24,14 +24,16 @@ import { useErc7730Store } from "~/store/erc7730Provider";
 import useFunctionStore from "~/store/useOperationStore";
 import generateFromERC7730 from "./generateFromERC7730";
 import { SUPPORTED_CHAINS } from "~/lib/constants";
-import { Upload } from "lucide-react";
+import { Upload, FileJson } from "lucide-react";
+import type { Erc7730 } from "~/store/types";
 
 const CardErc7730 = () => {
   const [input, setInput] = useState("");
-  const [inputType, setInputType] = useState<"address" | "abi">("address");
+  const [inputType, setInputType] = useState<"address" | "abi" | "schema">("address");
   const [chainId, setChainId] = useState(1);
   const [isDragOver, setIsDragOver] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [schemaFile, setSchemaFile] = useState<Erc7730 | null>(null);
   const { setErc7730 } = useErc7730Store((state) => state);
   const router = useRouter();
 
@@ -43,13 +45,21 @@ const CardErc7730 = () => {
     mutationFn: (input: string) =>
       generateFromERC7730({
         input,
-        inputType,
+        inputType: inputType as "address" | "abi",
         chainId,
       }),
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (inputType === "schema" && schemaFile) {
+      useFunctionStore.persist.clearStorage();
+      setErc7730(schemaFile);
+      router.push("/chains");
+      return;
+    }
+
     const erc7730 = await fetchERC7730Metadata(input);
 
     if (erc7730) {
@@ -62,10 +72,11 @@ const CardErc7730 = () => {
   };
 
   const onTabChange = (value: string) => {
-    setInputType(value as "address" | "abi");
+    setInputType(value as "address" | "abi" | "schema");
     setInput("");
     setFileError(null);
     setIsDragOver(false);
+    setSchemaFile(null);
   };
 
   const validateAndSetABI = async (file: File) => {
@@ -146,13 +157,77 @@ const CardErc7730 = () => {
     e.target.value = '';
   };
 
+  const validateAndSetSchema = async (file: File) => {
+    setFileError(null);
+    setSchemaFile(null);
+
+    if (!file.type.includes("json") && !file.name.endsWith(".json")) {
+      setFileError("Please upload a JSON file");
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        throw new Error("Invalid JSON format");
+      }
+
+      if (typeof parsed !== "object" || parsed === null) {
+        throw new Error("Schema must be a JSON object");
+      }
+
+      const schema = parsed as Record<string, unknown>;
+
+      // Validate required ERC-7730 fields
+      if (!schema.context || typeof schema.context !== "object") {
+        throw new Error("Missing or invalid 'context' field");
+      }
+      if (!schema.metadata || typeof schema.metadata !== "object") {
+        throw new Error("Missing or invalid 'metadata' field");
+      }
+      if (!schema.display || typeof schema.display !== "object") {
+        throw new Error("Missing or invalid 'display' field");
+      }
+
+      setSchemaFile(schema as unknown as Erc7730);
+      setInput(file.name);
+    } catch (error) {
+      setFileError(
+        error instanceof Error ? error.message : "Failed to read file",
+      );
+    }
+  };
+
+  const handleSchemaDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0 && files[0]) {
+      await validateAndSetSchema(files[0]);
+    }
+  };
+
+  const handleSchemaFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0 && files[0]) {
+      await validateAndSetSchema(files[0]);
+    }
+    e.target.value = '';
+  };
+
   return (
     <div className="w-full lg:w-[580px]">
       <form onSubmit={handleSubmit} className="mb-4 flex w-full flex-col gap-4">
         <Tabs defaultValue="address" onValueChange={onTabChange}>
-          <TabsList className="mb-10 grid w-full grid-cols-2">
+          <TabsList className="mb-10 grid w-full grid-cols-3">
             <TabsTrigger value="address">Contract Address</TabsTrigger>
             <TabsTrigger value="abi">ABI</TabsTrigger>
+            <TabsTrigger value="schema">Load Schema</TabsTrigger>
           </TabsList>
           <TabsContent value="address">
             <div className="space-y-4">
@@ -248,13 +323,61 @@ const CardErc7730 = () => {
               </div>
             </div>
           </TabsContent>
+          <TabsContent value="schema">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="schema-upload">ERC-7730 Schema JSON</Label>
+                <div
+                  className={`flex min-h-[120px] cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed p-6 transition-colors ${
+                    isDragOver
+                      ? "border-blue-400 bg-blue-50 dark:bg-blue-950"
+                      : schemaFile
+                        ? "border-green-400 bg-green-50 dark:bg-green-950"
+                        : "border-input hover:border-muted-foreground/50"
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleSchemaDrop}
+                  onClick={() => document.getElementById('schema-file-input')?.click()}
+                >
+                  <FileJson className="mb-2 h-8 w-8 text-muted-foreground" />
+                  {schemaFile ? (
+                    <p className="text-sm text-green-600 dark:text-green-400">
+                      Loaded: {input}
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        Drop an ERC-7730 JSON file here or click to browse
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground/70">
+                        Must contain context, metadata, and display fields
+                      </p>
+                    </>
+                  )}
+                </div>
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleSchemaFileSelect}
+                  className="hidden"
+                  id="schema-file-input"
+                />
+                {fileError && (
+                  <p className="text-sm text-red-600">{fileError}</p>
+                )}
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
-        <Button type="submit" disabled={loading}>
+        <Button type="submit" disabled={loading || (inputType === "schema" && !schemaFile)}>
           Submit
         </Button>
       </form>
 
-      <SampleAddressAbiCard setInput={setInput} inputType={inputType} />
+      {inputType !== "schema" && (
+        <SampleAddressAbiCard setInput={setInput} inputType={inputType} />
+      )}
 
       {error && (
         <Card>

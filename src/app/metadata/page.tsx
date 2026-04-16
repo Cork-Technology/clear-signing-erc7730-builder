@@ -1,20 +1,17 @@
-import { HydrateClient } from "~/trpc/server";
 import MetadataForm from "./metaDataForm";
 import { SidebarProvider } from "~/components/ui/sidebar";
 import { AppSidebar } from "~/shared/sidebar";
 
-export default async function Home() {
+export default function Home() {
   return (
-    <HydrateClient>
-      <SidebarProvider>
-        <AppSidebar />
+    <SidebarProvider>
+      <AppSidebar />
 
-        <div className="container mx-auto flex p-4">
-          <div className="w-full p-10">
-            <MetadataForm />
-          </div>
+      <div className="container mx-auto flex p-4">
+        <div className="w-full p-10">
+          <MetadataForm />
         </div>
-      </SidebarProvider>
-    </HydrateClient>
+      </div>
+    </SidebarProvider>
   );
 }

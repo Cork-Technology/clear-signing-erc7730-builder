@@ -2,8 +2,7 @@ import "~/styles/globals.css";
 
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
-import { env } from "~/env.js";
-import { TRPCReactProvider } from "~/trpc/react";
+import { QueryProvider } from "~/lib/query-provider";
 import { Erc7730StoreProvider } from "~/store/erc7730Provider";
 import { Toaster } from "~/components/ui/toaster";
 import { ThemeProvider } from "~/components/ui/theme-provider";
@@ -28,10 +27,10 @@ export const metadata: Metadata = {
   },
 };
 
-const GTM_ID = env.NEXT_PUBLIC_GTM;
-const ONETRUST_ID = env.NEXT_PUBLIC_ONETRUST;
+const GTM_ID = process.env.NEXT_PUBLIC_GTM;
+const ONETRUST_ID = process.env.NEXT_PUBLIC_ONETRUST;
 const ONETRUST_ENVIROMENT_ID =
-  env.NODE_ENV === "production" ? ONETRUST_ID : `${ONETRUST_ID}-test`;
+  process.env.NODE_ENV === "production" ? ONETRUST_ID : ONETRUST_ID ? `${ONETRUST_ID}-test` : undefined;
 
 export default function RootLayout({
   children,
@@ -43,7 +42,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body>
-        <TRPCReactProvider>
+        <QueryProvider>
           <Erc7730StoreProvider>
             <ThemeProvider
               attribute="class"
@@ -55,8 +54,8 @@ export default function RootLayout({
               <Toaster />
             </ThemeProvider>
           </Erc7730StoreProvider>
-        </TRPCReactProvider>
-        {ONETRUST_ID && (
+        </QueryProvider>
+        {ONETRUST_ENVIROMENT_ID && (
           <Script
             strategy="beforeInteractive"
             src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js"

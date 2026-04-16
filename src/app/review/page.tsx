@@ -1,4 +1,3 @@
-import { HydrateClient } from "~/trpc/server";
 import { DynamicBreadcrumb } from "~/components/ui/dynamic-breadcrumb";
 import OperationCarousel from "./operationCarousel";
 import BackToEdit from "./backToEdit";
@@ -6,28 +5,26 @@ import ReviewJson from "./reviewJson";
 import SelectValidOperation from "./selectValidOperation";
 import OperationNotValidated from "./operationNotValidated";
 
-export default async function Home() {
+export default function Home() {
   return (
-    <HydrateClient>
-      <div className="container mx-auto flex max-w-2xl flex-col justify-center p-4 lg:min-w-[1000px]">
-        <div className="flex flex-col gap-4">
-          <h1 className="text-2xl font-bold">Review Operations</h1>
-          <div className="flew-row flex justify-between">
-            <DynamicBreadcrumb />
+    <div className="container mx-auto flex max-w-2xl flex-col justify-center p-4 lg:min-w-[1000px]">
+      <div className="flex flex-col gap-4">
+        <h1 className="text-2xl font-bold">Review Operations</h1>
+        <div className="flew-row flex justify-between">
+          <DynamicBreadcrumb />
 
-            <div className="flex items-center gap-4">
-              <OperationNotValidated />
-              <BackToEdit />
-              <ReviewJson />
-            </div>
+          <div className="flex items-center gap-4">
+            <OperationNotValidated />
+            <BackToEdit />
+            <ReviewJson />
           </div>
-
-          <div className="mx-auto py-4">
-            <SelectValidOperation />
-          </div>
-          <OperationCarousel />
         </div>
+
+        <div className="mx-auto py-4">
+          <SelectValidOperation />
+        </div>
+        <OperationCarousel />
       </div>
-    </HydrateClient>
+    </div>
   );
 }

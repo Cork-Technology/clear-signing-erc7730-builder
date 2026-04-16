@@ -1,22 +1,19 @@
-import { HydrateClient } from "~/trpc/server";
 import CardErc7730 from "./address-abi-form";
 import { ModeToggle } from "~/components/ui/theme-switcher";
 
-export default async function Home() {
+export default function Home() {
   return (
-    <HydrateClient>
-      <div className="container m-auto flex h-screen max-w-2xl items-center justify-center p-4">
-        <div>
-          <h1 className="mb-6 flex items-center justify-between text-2xl font-bold">
-            <span>
-              ERC7730 Json builder <span className="text-red-500">Alpha</span>
-            </span>
-            <ModeToggle />
-          </h1>
+    <div className="container m-auto flex h-screen max-w-2xl items-center justify-center p-4">
+      <div>
+        <h1 className="mb-6 flex items-center justify-between text-2xl font-bold">
+          <span>
+            ERC7730 Json builder <span className="text-red-500">Alpha</span>
+          </span>
+          <ModeToggle />
+        </h1>
 
-          <CardErc7730 />
-        </div>
+        <CardErc7730 />
       </div>
-    </HydrateClient>
+    </div>
   );
 }

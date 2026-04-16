@@ -1,9 +1,10 @@
-import { type paths } from "~/generate/api-types";
+import { type components } from "~/generate/api-types";
+import {
+  fetchAbiFromExplorer,
+  generateDescriptor,
+} from "~/lib/generate-descriptor";
 
-type GenerateBody =
-  paths["/api/py/generateERC7730"]["post"]["requestBody"]["content"]["application/json"];
-export type GenerateResponse =
-  paths["/api/py/generateERC7730"]["post"]["responses"]["200"]["content"]["application/json"];
+export type GenerateResponse = components["schemas"]["InputERC7730Descriptor"];
 
 export default async function generateERC7730({
   input,
@@ -14,28 +15,24 @@ export default async function generateERC7730({
   input: string;
   chainId?: number;
 }): Promise<GenerateResponse | null> {
-  const body: GenerateBody = {
-    address: inputType === "address" ? input : undefined,
-    abi: inputType === "abi" ? input : undefined,
-    chain_id: chainId,
-  };
+  const resolvedChainId = chainId ?? 1;
 
-  const response = await fetch("/api/py/generateERC7730", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
+  let abi: unknown[];
 
-  if (!response.ok) {
-    const data = (await response.json()) as {
-      message: string;
-    };
-    throw new Error(`API Error: ${data.message}`);
+  if (inputType === "address") {
+    abi = await fetchAbiFromExplorer(resolvedChainId, input);
+  } else {
+    abi = JSON.parse(input) as unknown[];
   }
 
-  const data = (await response.json()) as GenerateResponse;
+  const result = generateDescriptor({
+    chainId: resolvedChainId,
+    contractAddress:
+      inputType === "address"
+        ? input
+        : "0xdeadbeef00000000000000000000000000000000",
+    abi: abi as Parameters<typeof generateDescriptor>[0]["abi"],
+  });
 
-  return data;
+  return result;
 }
