@@ -4,6 +4,8 @@ import flexInfo from "./assets/flex-info.svg";
 import staxInfo from "./assets/stax-info.svg";
 import flexSignButton from "./assets//flex-sign-button.svg";
 import staxSignButton from "./assets//stax-sign-button.svg";
+import scrollIcon from "./assets/scroll.svg";
+import ethIcon from "./assets/eth.svg";
 import { cn } from "~/lib/utils";
 import { Stax } from "./stax";
 import { Flex } from "./flex";
@@ -120,12 +122,13 @@ export const Device = {
       </div>
     );
   },
-  Icon: ({ bg }: { bg: string }) => (
-    <div
-      className={cn(
-        "h-[32px] w-[32px] self-center bg-contain bg-no-repeat",
-        bg,
-      )}
+  Icon: ({ src }: { src: string }) => (
+    <Image
+      src={src}
+      alt=""
+      width={32}
+      height={32}
+      className="self-center"
     />
   ),
   OperationSummary: ({
@@ -136,10 +139,10 @@ export const Device = {
     type: string;
   }) => {
     const isStax = false;
-    const iconBg =
+    const iconSrc =
       type === "message"
-        ? "bg-[url(/assets/scroll.svg)]"
-        : "bg-[url(/assets/eth.svg)]";
+        ? (scrollIcon as string)
+        : (ethIcon as string);
 
     return (
       <div
@@ -148,7 +151,7 @@ export const Device = {
           isStax ? "p-3" : "p-4",
         )}
       >
-        <Device.Icon bg={iconBg} />
+        <Device.Icon src={iconSrc} />
         <Device.HeadingText>
           <div className="text-center">{children}</div>
         </Device.HeadingText>

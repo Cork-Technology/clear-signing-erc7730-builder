@@ -2,6 +2,7 @@ import Image from "next/image";
 import { type ReactNode } from "react";
 import staxChevronLeft from "./assets/stax-chevron-left.svg";
 import staxChevronRight from "./assets/stax-chevron-right.svg";
+import staxBezel from "./assets/DeviceBezel-Stax.png";
 import { Device } from "./device";
 import { cn } from "~/lib/utils";
 
@@ -10,7 +11,10 @@ import { cn } from "~/lib/utils";
 
 export const Stax = {
   Bezel: ({ children }: { children: ReactNode }) => (
-    <div className="h-[355px] w-[226px] bg-[url(/assets/DeviceBezel-Stax.png)] bg-contain px-[13px] py-[10px]">
+    <div
+      className="h-[355px] w-[226px] bg-contain px-[13px] py-[10px]"
+      style={{ backgroundImage: `url(${(staxBezel as { src: string }).src})` }}
+    >
       <div className="flex h-[335px] w-[200px] overflow-hidden rounded-[15px] rounded-l-none">
         {children}
       </div>
