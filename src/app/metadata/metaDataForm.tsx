@@ -32,6 +32,9 @@ const metaDataSchema = z.object({
   legalName: z.string().min(1, {
     message: "Legal name is required.",
   }),
+  tokenName: z.string().optional(),
+  tokenTicker: z.string().optional(),
+  tokenDecimals: z.coerce.number().optional(),
 });
 
 type MetadataFormType = z.infer<typeof metaDataSchema>;
@@ -67,17 +70,30 @@ const MetadataForm = () => {
       url: metadata?.info?.url ?? "",
       legalName: metadata?.info?.legalName ?? "",
       contractName: contractId ?? "",
+      tokenName: metadata?.token?.name ?? "",
+      tokenTicker: metadata?.token?.ticker ?? "",
+      tokenDecimals: metadata?.token?.decimals ?? undefined,
     },
   });
 
   form.watch((value) => {
     if (hasHydrated === false) return;
+    const token =
+      value.tokenName || value.tokenTicker || value.tokenDecimals
+        ? {
+            name: value.tokenName ?? "",
+            ticker: value.tokenTicker ?? "",
+            decimals: value.tokenDecimals ?? 18,
+          }
+        : undefined;
+
     setMetadata({
       owner: value.owner,
       info: {
         legalName: value.legalName ?? "",
         url: value.url ?? "",
       },
+      token,
     });
     setContractId(value.contractName);
   });
@@ -91,12 +107,22 @@ const MetadataForm = () => {
   const onSubmit = (
     data: MetadataFormType & { contractName: Erc7730["context"]["$id"] },
   ) => {
+    const token =
+      data.tokenName || data.tokenTicker || data.tokenDecimals
+        ? {
+            name: data.tokenName ?? "",
+            ticker: data.tokenTicker ?? "",
+            decimals: data.tokenDecimals ?? 18,
+          }
+        : undefined;
+
     setMetadata({
       owner: data.owner,
       info: {
         legalName: data.legalName,
         url: data.url,
       },
+      token,
     });
     setContractId(data.contractName);
     router.push("/operations");
@@ -180,6 +206,63 @@ const MetadataForm = () => {
                   </FormItem>
                 )}
               />
+
+              <details className="mt-2">
+                <summary className="cursor-pointer text-sm font-medium">
+                  ERC-20 Token Info (optional, v2)
+                </summary>
+                <div className="mt-3 flex flex-col gap-4">
+                  <FormField
+                    control={form.control}
+                    name="tokenName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Token Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            value={field.value ?? ""}
+                            placeholder="e.g. Tether USD"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="tokenTicker"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Token Ticker</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            value={field.value ?? ""}
+                            placeholder="e.g. USDT"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="tokenDecimals"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Token Decimals</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="number"
+                            value={field.value ?? ""}
+                            placeholder="e.g. 6"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </details>
             </Card>
             <div className="flex w-full items-center justify-end">
               <Button onClick={form.handleSubmit(onSubmit)}>Continue</Button>
