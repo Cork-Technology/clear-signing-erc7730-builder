@@ -63,8 +63,11 @@ export function updateOperationFromSchema(
   return {
     ...operation,
     intent: updatedSchema.intent,
+    ...(updatedSchema.interpolatedIntent
+      ? { interpolatedIntent: updatedSchema.interpolatedIntent }
+      : {}),
     fields: operation.fields,
     excluded: excludedPaths.length > 0 ? excludedPaths : null,
     required: filteredRequiredPaths.length > 0 ? filteredRequiredPaths : null,
-  };
+  } as Operation;
 }

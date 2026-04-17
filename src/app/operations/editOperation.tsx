@@ -39,6 +39,7 @@ const OperationFormSchema = z.object({
   intent: z.string().min(1, {
     message: "Please enter the intent of the operation.",
   }),
+  interpolatedIntent: z.string().optional(),
   fields: z.array(
     z.object({
       label: z.string(),

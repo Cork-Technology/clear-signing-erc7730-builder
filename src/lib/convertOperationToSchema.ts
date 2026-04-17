@@ -29,8 +29,15 @@ export function convertOperationToSchema(operation: Operation) {
 
   traverseFields(operation.fields);
 
+  const interpolatedIntent =
+    "interpolatedIntent" in operation &&
+    typeof (operation as Record<string, unknown>).interpolatedIntent === "string"
+      ? ((operation as Record<string, unknown>).interpolatedIntent as string)
+      : "";
+
   return {
     intent: typeof operation.intent === "string" ? operation.intent : "",
+    interpolatedIntent,
     fields,
   };
 }
