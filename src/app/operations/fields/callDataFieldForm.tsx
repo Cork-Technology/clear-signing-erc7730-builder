@@ -1,20 +1,89 @@
-import { FormDescription, FormLabel } from "~/components/ui/form";
+import { z } from "zod";
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { type UseFormReturn } from "react-hook-form";
+import { type OperationFormType } from "../editOperation";
 
-const CallDataFieldForm = () => {
+export const CalldataParametersFormSchema = z.object({
+  calleePath: z.string().optional(),
+  callee: z.string().optional(),
+  selector: z.string().optional(),
+});
+
+interface Props {
+  form: UseFormReturn<OperationFormType>;
+  index: number;
+}
+
+const CallDataFieldForm = ({ form, index }: Props) => {
   return (
-    <div>
-      <FormLabel>Call data</FormLabel>
-      <FormDescription>
-        Data contains a call to another smart contract. To look for relevant
-        ERC-7730 files matching this embedded calldata, use callee parameter and
-        selector. If an ERC-7730 is not found or if embedded calldata are not
-        supported by the wallet, it MAY display a hash of the embedded calldata
-        instead, with target calleePath resolved to a trusted name if possible.
-      </FormDescription>
-      <FormDescription>
-        This feature is in progress if you want to do it you can manually add it
-        to the json
-      </FormDescription>
+    <div className="flex flex-col gap-4">
+      <FormField
+        control={form.control}
+        name={`fields.${index}.params.calleePath`}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Callee Path</FormLabel>
+            <FormDescription>
+              Path to the address of the contract being called by the embedded
+              calldata. Use this OR Callee (constant address).
+            </FormDescription>
+            <FormControl>
+              <Input
+                {...field}
+                value={(field.value as string) ?? ""}
+                placeholder="e.g. @.to"
+              />
+            </FormControl>
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name={`fields.${index}.params.callee`}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Callee (constant)</FormLabel>
+            <FormDescription>
+              The constant address of the contract being called. Use this OR
+              Callee Path.
+            </FormDescription>
+            <FormControl>
+              <Input
+                {...field}
+                value={(field.value as string) ?? ""}
+                placeholder="0x..."
+              />
+            </FormControl>
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name={`fields.${index}.params.selector`}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Selector</FormLabel>
+            <FormDescription>
+              Optional function selector hex string. If omitted, the first 4
+              bytes of the calldata are used.
+            </FormDescription>
+            <FormControl>
+              <Input
+                {...field}
+                value={(field.value as string) ?? ""}
+                placeholder="0xa9059cbb"
+              />
+            </FormControl>
+          </FormItem>
+        )}
+      />
     </div>
   );
 };

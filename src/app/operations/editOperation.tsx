@@ -10,6 +10,8 @@ import { TokenAmountFieldFormSchema } from "./fields/tokenAmountFormField";
 import { NftNameParametersFormSchema } from "./fields/nftNameFieldForm";
 import { AddressNameParametersFormSchema } from "./fields/addressNameFieldForm";
 import { UnitParametersFormSchema } from "./fields/unitFieldForm";
+import { EnumParametersFormSchema } from "./fields/enumFieldForm";
+import { CalldataParametersFormSchema } from "./fields/callDataFieldForm";
 import { convertOperationToSchema } from "~/lib/convertOperationToSchema";
 import { updateOperationFromSchema } from "~/lib/updateOperationFromSchema";
 import { removeExcludedFields } from "~/lib/removeExcludedFields";
@@ -25,6 +27,8 @@ const FieldParams = z.union([
   NftNameParametersFormSchema,
   AddressNameParametersFormSchema,
   UnitParametersFormSchema,
+  EnumParametersFormSchema,
+  CalldataParametersFormSchema,
   z.null(),
   z.object({}).strict(),
 ]);
@@ -50,6 +54,8 @@ const OperationFormSchema = z.object({
           "duration",
           "unit",
           "enum",
+          "chainId",
+          "tokenTicker",
         ]),
         z.null(),
         z.undefined(),

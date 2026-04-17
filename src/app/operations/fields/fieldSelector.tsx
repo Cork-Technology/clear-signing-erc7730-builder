@@ -19,6 +19,9 @@ import NftNameParametersForm from "./nftNameFieldForm";
 import AddressNameParametersForm from "./addressNameFieldForm";
 import DurationFieldForm from "./durationFieldForm";
 import UnitParametersForm from "./unitFieldForm";
+import ChainIdFieldForm from "./chainIdFieldForm";
+import TokenTickerFieldForm from "./tokenTickerFieldForm";
+import EnumFieldForm from "./enumFieldForm";
 
 interface Props {
   form: UseFormReturn<OperationFormType>;
@@ -48,7 +51,7 @@ const FieldOption = ({ form, index, field }: Props) => {
   }
 
   if (format === "calldata") {
-    return <CallDataFieldForm />;
+    return <CallDataFieldForm form={form} index={index} />;
   }
 
   if (format === "nftName") {
@@ -67,10 +70,22 @@ const FieldOption = ({ form, index, field }: Props) => {
     return <UnitParametersForm form={form} index={index} />;
   }
 
+  if (format === "enum") {
+    return <EnumFieldForm form={form} index={index} />;
+  }
+
+  if (format === "chainId") {
+    return <ChainIdFieldForm />;
+  }
+
+  if (format === "tokenTicker") {
+    return <TokenTickerFieldForm />;
+  }
+
   return <div>{format}</div>;
 };
 
-const possibleFormats: components["schemas"]["FieldFormat"][] = [
+const possibleFormats: string[] = [
   "raw",
   "amount",
   "tokenAmount",
@@ -80,7 +95,9 @@ const possibleFormats: components["schemas"]["FieldFormat"][] = [
   "date",
   "duration",
   "unit",
-  // "enum",
+  "enum",
+  "chainId",
+  "tokenTicker",
 ];
 
 const FieldSelector = ({ form, index, field }: Props) => {
