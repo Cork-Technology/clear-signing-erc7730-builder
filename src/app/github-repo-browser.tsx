@@ -1,16 +1,22 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "~/components/ui/collapsible";
 import {
-  GitBranch,
   Folder,
   FolderOpen,
   FileJson,
@@ -39,7 +45,6 @@ function parseGitHubUrl(url: string): {
 } | null {
   try {
     const cleaned = url.trim().replace(/\/$/, "");
-    // Match: github.com/owner/repo, github.com/owner/repo/tree/branch/path
     const match =
       /github\.com\/([^/]+)\/([^/]+?)(?:\.git)?(?:\/tree\/([^/]+)(?:\/(.+))?)?$/.exec(
         cleaned,
@@ -62,7 +67,6 @@ function buildTree(
 ): TreeNode[] {
   const root: TreeNode[] = [];
 
-  // Filter to JSON files only, and optionally filter by path prefix
   const filtered = paths.filter((p) => {
     if (p.type === "tree") return true;
     if (!p.path.endsWith(".json")) return false;
@@ -70,7 +74,6 @@ function buildTree(
     return true;
   });
 
-  // Build nested structure
   const nodeMap = new Map<string, TreeNode>();
 
   for (const item of filtered) {
@@ -96,7 +99,6 @@ function buildTree(
         };
         nodeMap.set(fullPath, node);
 
-        // Attach to parent
         if (currentPath && nodeMap.has(currentPath)) {
           nodeMap.get(currentPath)!.children?.push(node);
         } else if (!currentPath || !nodeMap.has(currentPath)) {
@@ -108,7 +110,6 @@ function buildTree(
     }
   }
 
-  // Remove empty folders (folders with no JSON descendants)
   function pruneEmpty(nodes: TreeNode[]): TreeNode[] {
     return nodes.filter((node) => {
       if (node.type === "blob") return true;
@@ -223,9 +224,12 @@ export default function GitHubRepoBrowser({
   onFileSelect,
 }: GitHubRepoBrowserProps) {
   const [repoUrl, setRepoUrl] = useState("");
-  const [branch, setBranch] = useState("");
+  const [branches, setBranches] = useState<string[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState<string>("");
+  const [defaultBranch, setDefaultBranch] = useState<string>("");
   const [tree, setTree] = useState<TreeNode[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loadingBranches, setLoadingBranches] = useState(false);
+  const [loadingTree, setLoadingTree] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [repoInfo, setRepoInfo] = useState<{
     owner: string;
@@ -233,62 +237,113 @@ export default function GitHubRepoBrowser({
     branch: string;
   } | null>(null);
   const [loadingFile, setLoadingFile] = useState<string | null>(null);
+  const [parsedRepo, setParsedRepo] = useState<{
+    owner: string;
+    repo: string;
+    path?: string;
+  } | null>(null);
 
+  // Track which repo URL we last fetched branches for, to avoid re-fetching
+  const lastFetchedUrl = useRef("");
+
+  const fetchBranches = useCallback(async (url: string) => {
+    const parsed = parseGitHubUrl(url);
+    if (!parsed) return;
+
+    // Don't re-fetch for the same owner/repo
+    const repoKey = `${parsed.owner}/${parsed.repo}`;
+    if (lastFetchedUrl.current === repoKey) return;
+
+    setError(null);
+    setBranches([]);
+    setSelectedBranch("");
+    setDefaultBranch("");
+    setTree([]);
+    setRepoInfo(null);
+    setParsedRepo({ owner: parsed.owner, repo: parsed.repo, path: parsed.path });
+    setLoadingBranches(true);
+    lastFetchedUrl.current = repoKey;
+
+    try {
+      // Fetch default branch from repo info
+      const repoRes = await fetch(
+        `https://api.github.com/repos/${parsed.owner}/${parsed.repo}`,
+      );
+      if (repoRes.status === 404) throw new Error("Repository not found");
+      if (repoRes.status === 403) throw new Error("GitHub API rate limit exceeded. Try again later.");
+      if (!repoRes.ok) throw new Error("Failed to fetch repository info");
+
+      const repoData = (await repoRes.json()) as { default_branch: string };
+      setDefaultBranch(repoData.default_branch);
+
+      // Fetch branches (up to 100)
+      const branchRes = await fetch(
+        `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/branches?per_page=100`,
+      );
+      if (!branchRes.ok) throw new Error("Failed to fetch branches");
+
+      const branchData = (await branchRes.json()) as { name: string }[];
+      const branchNames = branchData.map((b) => b.name);
+      setBranches(branchNames);
+
+      // Auto-select: URL branch > default branch
+      const autoSelect = parsed.branch ?? repoData.default_branch;
+      if (branchNames.includes(autoSelect)) {
+        setSelectedBranch(autoSelect);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch");
+      lastFetchedUrl.current = "";
+    } finally {
+      setLoadingBranches(false);
+    }
+  }, []);
+
+  // Fetch tree when branch is selected
   const fetchTree = useCallback(async () => {
+    if (!parsedRepo || !selectedBranch) return;
+
     setError(null);
     setTree([]);
     setRepoInfo(null);
+    setLoadingTree(true);
 
-    const parsed = parseGitHubUrl(repoUrl);
-    if (!parsed) {
-      setError("Invalid GitHub URL. Use: https://github.com/owner/repo");
-      return;
-    }
-
-    setLoading(true);
     try {
-      // Priority: input field > URL branch > default "main"
-      const branchInput = branch.trim();
-      const resolvedBranch = branchInput !== "" ? branchInput : (parsed.branch ?? "main");
-
       const res = await fetch(
-        `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/git/trees/${resolvedBranch}?recursive=1`,
+        `https://api.github.com/repos/${parsedRepo.owner}/${parsedRepo.repo}/git/trees/${selectedBranch}?recursive=1`,
       );
 
-      if (res.status === 404) {
-        // Try 'master' if default failed and no branch was explicitly specified
-        if (!branch.trim() && !parsed.branch) {
-          const retryRes = await fetch(
-            `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/git/trees/master?recursive=1`,
-          );
-          if (!retryRes.ok) throw new Error("Repository or branch not found");
-          const data = (await retryRes.json()) as {
-            tree: { path: string; type: string }[];
-          };
-          setTree(buildTree(data.tree, parsed.path));
-          setRepoInfo({ owner: parsed.owner, repo: parsed.repo, branch: "master" });
-          return;
-        }
-        throw new Error(`Branch "${resolvedBranch}" not found`);
-      }
-
-      if (res.status === 403) {
-        throw new Error("GitHub API rate limit exceeded. Try again later.");
-      }
-
+      if (res.status === 404) throw new Error(`Branch "${selectedBranch}" not found`);
+      if (res.status === 403) throw new Error("GitHub API rate limit exceeded. Try again later.");
       if (!res.ok) throw new Error("Failed to fetch repository tree");
 
       const data = (await res.json()) as {
         tree: { path: string; type: string }[];
       };
-      setTree(buildTree(data.tree, parsed.path));
-      setRepoInfo({ owner: parsed.owner, repo: parsed.repo, branch: resolvedBranch });
+      setTree(buildTree(data.tree, parsedRepo.path));
+      setRepoInfo({
+        owner: parsedRepo.owner,
+        repo: parsedRepo.repo,
+        branch: selectedBranch,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch");
     } finally {
-      setLoading(false);
+      setLoadingTree(false);
     }
-  }, [repoUrl, branch]);
+  }, [parsedRepo, selectedBranch]);
+
+  // Auto-fetch tree when branch changes
+  useEffect(() => {
+    if (selectedBranch && parsedRepo) {
+      void fetchTree();
+    }
+  }, [selectedBranch, parsedRepo, fetchTree]);
+
+  const handleUrlSubmit = () => {
+    lastFetchedUrl.current = ""; // force refetch
+    void fetchBranches(repoUrl);
+  };
 
   return (
     <div className="space-y-3">
@@ -298,42 +353,53 @@ export default function GitHubRepoBrowser({
           placeholder="https://github.com/owner/repo"
           value={repoUrl}
           onChange={(e) => setRepoUrl(e.target.value)}
+          onBlur={() => void fetchBranches(repoUrl)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
-              void fetchTree();
+              handleUrlSubmit();
             }
           }}
-        />
-        <Input
-          placeholder="branch"
-          value={branch}
-          onChange={(e) => setBranch(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              void fetchTree();
-            }
-          }}
-          className="w-[120px] shrink-0"
         />
         <Button
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => void fetchTree()}
-          disabled={loading || !repoUrl.trim()}
+          onClick={handleUrlSubmit}
+          disabled={loadingBranches || !repoUrl.trim()}
           className="flex shrink-0 items-center gap-2"
         >
-          {loading ? (
+          {loadingBranches ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <GitBranch className="h-4 w-4" />
+            "Fetch"
           )}
-          Fetch
         </Button>
       </div>
+      {branches.length > 0 && (
+        <div className="flex items-center gap-2">
+          <Label className="shrink-0 text-sm">Branch</Label>
+          <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a branch" />
+            </SelectTrigger>
+            <SelectContent>
+              {branches.map((b) => (
+                <SelectItem key={b} value={b}>
+                  {b}{b === defaultBranch ? " (default)" : ""}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       {error && <p className="text-sm text-red-600">{error}</p>}
+      {loadingTree && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Loading files...
+        </div>
+      )}
       {tree.length > 0 && repoInfo && (
         <div className="max-h-[300px] overflow-y-auto rounded-md border p-2">
           <p className="mb-2 text-xs text-muted-foreground">
@@ -359,7 +425,7 @@ export default function GitHubRepoBrowser({
             ))}
         </div>
       )}
-      {tree.length === 0 && repoInfo && !loading && (
+      {tree.length === 0 && repoInfo && !loadingTree && (
         <p className="text-sm text-muted-foreground">
           No JSON files found in this repository.
         </p>
