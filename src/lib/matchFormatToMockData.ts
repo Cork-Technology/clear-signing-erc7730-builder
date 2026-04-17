@@ -17,7 +17,19 @@ const matchFieldFormatToMockData = (
     case "date":
       return "2024-02-29T08:27:12";
     case "duration":
-      return "duration";
+      return "02:17:30";
+    case "chainId":
+      return "Ethereum Mainnet";
+    case "tokenTicker":
+      return "USDT";
+    case "enum":
+      return "variable";
+    case "unit":
+      return "10h";
+    case "addressName":
+      return "vitalik.eth";
+    case "calldata":
+      return "0xa9059cbb...";
     default:
       return format;
   }
