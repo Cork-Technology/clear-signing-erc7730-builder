@@ -28,17 +28,13 @@ interface ABIEntry {
   anonymous?: boolean;
 }
 
-const ETHERSCAN_LIKE_APIS: Record<number, { url: string; name: string }> = {
-  1: { url: "https://api.etherscan.io/api", name: "Etherscan" },
-  137: { url: "https://api.polygonscan.com/api", name: "Polygonscan" },
-  56: { url: "https://api.bscscan.com/api", name: "BscScan" },
-  43114: { url: "https://api.snowscan.xyz/api", name: "Snowscan" },
-  42161: { url: "https://api.arbiscan.io/api", name: "Arbiscan" },
-  10: { url: "https://api-optimistic.etherscan.io/api", name: "Optimism Etherscan" },
-  8453: { url: "https://api.basescan.org/api", name: "BaseScan" },
-  534352: { url: "https://api.scrollscan.com/api", name: "ScrollScan" },
-  59144: { url: "https://api.lineascan.build/api", name: "LineaScan" },
-};
+// Etherscan V2 API — single endpoint for all supported chains
+const ETHERSCAN_V2_URL = "https://api.etherscan.io/v2/api";
+
+// Chain IDs supported by Etherscan V2
+const SUPPORTED_CHAIN_IDS = new Set([
+  1, 137, 56, 43114, 42161, 10, 8453, 534352, 59144,
+]);
 
 function containsAnyOf(name: string, ...keywords: string[]): boolean {
   const lower = name.toLowerCase();
@@ -207,14 +203,14 @@ export async function fetchAbiFromExplorer(
   address: string,
   apiKey?: string,
 ): Promise<ABIEntry[]> {
-  const explorer = ETHERSCAN_LIKE_APIS[chainId];
-  if (!explorer) {
+  if (!SUPPORTED_CHAIN_IDS.has(chainId)) {
     throw new Error(
       `Chain ${chainId} is not supported for automatic ABI fetching. Please upload the ABI manually.`,
     );
   }
 
   const params = new URLSearchParams({
+    chainid: chainId.toString(),
     module: "contract",
     action: "getabi",
     address,
@@ -223,9 +219,9 @@ export async function fetchAbiFromExplorer(
     params.set("apikey", apiKey);
   }
 
-  const response = await fetch(`${explorer.url}?${params.toString()}`);
+  const response = await fetch(`${ETHERSCAN_V2_URL}?${params.toString()}`);
   if (!response.ok) {
-    throw new Error(`Failed to fetch ABI from ${explorer.name}: ${response.statusText}`);
+    throw new Error(`Failed to fetch ABI from Etherscan: ${response.statusText}`);
   }
 
   const data = (await response.json()) as {
@@ -236,7 +232,7 @@ export async function fetchAbiFromExplorer(
 
   if (data.status !== "1") {
     throw new Error(
-      `${explorer.name} API error: ${data.message}. ${data.result}`,
+      `Etherscan API error: ${data.message}. ${data.result}`,
     );
   }
 

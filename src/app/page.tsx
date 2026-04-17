@@ -3,17 +3,14 @@ import { ModeToggle } from "~/components/ui/theme-switcher";
 
 export default function Home() {
   return (
-    <div className="container m-auto flex h-screen max-w-2xl items-center justify-center p-4">
-      <div>
-        <h1 className="mb-6 flex items-center justify-between text-2xl font-bold">
-          <span>
-            ERC7730 Json builder <span className="text-red-500">Alpha</span>
-          </span>
-          <ModeToggle />
+    <div className="relative min-h-screen">
+      <div className="absolute right-4 top-4 z-10 flex items-center gap-3">
+        <h1 className="text-sm font-semibold">
+          ERC7730 Json builder <span className="text-red-500">Alpha</span>
         </h1>
-
-        <CardErc7730 />
+        <ModeToggle />
       </div>
+      <CardErc7730 />
     </div>
   );
 }
