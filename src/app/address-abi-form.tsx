@@ -266,7 +266,7 @@ const CardErc7730 = () => {
             <TabsTrigger value="abi">ABI</TabsTrigger>
             <TabsTrigger value="schema">Load Schema</TabsTrigger>
           </TabsList>
-          <TabsContent value="address">
+          <TabsContent value="address" forceMount className="data-[state=inactive]:hidden">
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="chain-select">Chain</Label>
@@ -297,7 +297,7 @@ const CardErc7730 = () => {
               </div>
             </div>
           </TabsContent>
-          <TabsContent value="abi">
+          <TabsContent value="abi" forceMount className="data-[state=inactive]:hidden">
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="chain-select">Chain</Label>
@@ -360,7 +360,7 @@ const CardErc7730 = () => {
               </div>
             </div>
           </TabsContent>
-          <TabsContent value="schema">
+          <TabsContent value="schema" forceMount className="data-[state=inactive]:hidden">
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>ERC-7730 Schema JSON</Label>
