@@ -38,7 +38,7 @@ export function updateOperationFromSchema(
             field.label = updatedField.label;
           }
           if ("format" in field && "format" in updatedField) {
-            field.format = updatedField.format;
+            (field as Record<string, unknown>).format = updatedField.format;
           }
           if ("params" in field && "params" in updatedField) {
             field.params = updatedField.params;

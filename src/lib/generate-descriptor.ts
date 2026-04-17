@@ -276,14 +276,15 @@ export function generateDescriptor(params: {
     address: contractAddress,
   };
 
-  const context: InputContractContext = {
-    contract: {
-      deployments: [deployment],
-      ...(schemaVersion === "v1"
-        ? { abi: abi as InputContractContext["contract"]["abi"] }
-        : {}),
-    },
-  };
+  const contract =
+    schemaVersion === "v1"
+      ? {
+          deployments: [deployment],
+          abi: abi as InputContractContext["contract"]["abi"],
+        }
+      : ({ deployments: [deployment] } as InputContractContext["contract"]);
+
+  const context: InputContractContext = { contract };
 
   // Build display formats
   const formats: Record<string, components["schemas"]["InputFormat"]> = {};

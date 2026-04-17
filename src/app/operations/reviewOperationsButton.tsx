@@ -33,7 +33,7 @@ const ReviewOperationsButton = ({ form, operation }: Props) => {
         ...field,
         ...fields[index],
       }))
-      .filter((field) => field.isIncluded),
+      .filter((field) => field.isIncluded) as unknown as Operation["fields"],
   });
 
   const totalPages = screens.length + 1;

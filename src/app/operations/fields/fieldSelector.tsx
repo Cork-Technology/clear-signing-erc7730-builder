@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { type components } from "~/generate/api-types";
 import TokenAmountFieldForm from "./tokenAmountFormField";
 import NftNameParametersForm from "./nftNameFieldForm";
 import AddressNameParametersForm from "./addressNameFieldForm";

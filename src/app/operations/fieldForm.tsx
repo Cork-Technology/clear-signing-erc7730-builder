@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "~/components/ui/button";
-import { Switch } from "~/components/ui/switch";
 import {
   FormField,
   FormItem,
@@ -95,30 +94,6 @@ const FieldLabelInput = ({
           />
         </FormControl>
         <FormMessage />
-      </FormItem>
-    )}
-  />
-);
-
-const FieldRequiredSwitch = ({
-  form,
-  index,
-}: {
-  form: UseFormReturn<OperationFormType>;
-  index: number;
-}) => (
-  <FormField
-    control={form.control}
-    name={`fields.${index}.isRequired`}
-    render={({ field }) => (
-      <FormItem>
-        <div className="flex items-center gap-2">
-          <FormLabel>Required</FormLabel>
-          <Switch checked={field.value} onCheckedChange={field.onChange} />
-        </div>
-        <p className="text-sm text-muted-foreground">
-          The required key indicates which parameters wallets SHOULD display.
-        </p>
       </FormItem>
     )}
   />

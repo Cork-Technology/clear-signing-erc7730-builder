@@ -35,7 +35,7 @@ const EnumFieldForm = ({ form, index }: Props) => {
             <FormControl>
               <Input
                 {...field}
-                value={(field.value as string) ?? ""}
+                value={field.value ?? ""}
                 placeholder="$.metadata.enums.yourEnumName"
               />
             </FormControl>

@@ -37,7 +37,7 @@ const CallDataFieldForm = ({ form, index }: Props) => {
             <FormControl>
               <Input
                 {...field}
-                value={(field.value as string) ?? ""}
+                value={String(field.value ?? "")}
                 placeholder="e.g. @.to"
               />
             </FormControl>
@@ -57,7 +57,7 @@ const CallDataFieldForm = ({ form, index }: Props) => {
             <FormControl>
               <Input
                 {...field}
-                value={(field.value as string) ?? ""}
+                value={String(field.value ?? "")}
                 placeholder="0x..."
               />
             </FormControl>
@@ -77,7 +77,7 @@ const CallDataFieldForm = ({ form, index }: Props) => {
             <FormControl>
               <Input
                 {...field}
-                value={(field.value as string) ?? ""}
+                value={String(field.value ?? "")}
                 placeholder="0xa9059cbb"
               />
             </FormControl>

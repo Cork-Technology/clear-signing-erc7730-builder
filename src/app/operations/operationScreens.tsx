@@ -33,7 +33,7 @@ const OperationScreens = ({ operation, form, activeFieldPath }: Props) => {
   const screens = getScreensForOperation(
     {
       ...operation,
-      fields: fields.filter((field) => field.isIncluded),
+      fields: fields.filter((field) => field.isIncluded) as unknown as Operation["fields"],
     },
     activeFieldPath,
   );
