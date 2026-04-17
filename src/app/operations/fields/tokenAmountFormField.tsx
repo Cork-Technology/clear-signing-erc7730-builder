@@ -13,6 +13,7 @@ import { Input } from "~/components/ui/input";
 
 export const TokenAmountFieldFormSchema = z.object({
   tokenPath: z.string().optional(),
+  token: z.string().optional(),
   nativeCurrencyAddress: z.union([z.string(), z.array(z.string())]).optional(),
   threshold: z.string().optional(),
   message: z.string().optional().default("Unlimited"),
@@ -45,6 +46,26 @@ const TokenAmountFieldForm = ({ form, index }: Props) => {
                 {...field}
                 value={field.value ?? ""}
                 placeholder="Enter token path"
+              />
+            </FormControl>
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name={`fields.${index}.params.token`}
+        render={({ field }) => (
+          <FormItem className="mb-1">
+            <FormLabel>Token (constant address)</FormLabel>
+            <FormDescription>
+              Constant token contract address. Use this OR Token Path above (not
+              both).
+            </FormDescription>
+            <FormControl>
+              <Input
+                {...field}
+                value={(field.value as string) ?? ""}
+                placeholder="0x..."
               />
             </FormControl>
           </FormItem>
