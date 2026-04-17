@@ -12,10 +12,13 @@ export function updateOperationFromSchema(
 
   updatedSchema.fields.forEach((field) => {
     updatedFields.set(field.path, field);
-    if (!field.isIncluded) {
+    const vis =
+      field.visible ??
+      (field.isIncluded ? (field.isRequired ? "always" : "optional") : "never");
+    if (vis === "never") {
       excludedPaths.push(field.path);
     }
-    if (field.isRequired) {
+    if (vis === "always") {
       requiredPaths.push(field.path);
     }
   });

@@ -11,17 +11,26 @@ export function convertOperationToSchema(operation: Operation) {
       if ("fields" in field && field.fields.length > 0) {
         traverseFields(field.fields, fullPath);
       } else {
+        const isIncluded = operation.excluded
+          ? !operation.excluded.includes(fullPath)
+          : true;
+        const isRequired = operation.required
+          ? operation.required.includes(fullPath)
+          : !operation.excluded?.includes(fullPath);
+        const visible: "always" | "never" | "optional" = !isIncluded
+          ? "never"
+          : isRequired
+            ? "always"
+            : "optional";
+
         fields.push({
           label: "label" in field ? (field.label ?? "") : "",
           format: "format" in field ? (field.format ?? "raw") : "raw",
           params: "params" in field ? (field.params ?? null) : null,
           path: fullPath,
-          isRequired: operation.required
-            ? operation.required.includes(fullPath)
-            : !operation.excluded?.includes(fullPath),
-          isIncluded: operation.excluded
-            ? !operation.excluded.includes(fullPath)
-            : true,
+          isRequired,
+          isIncluded,
+          visible,
         });
       }
     });

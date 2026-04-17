@@ -65,6 +65,7 @@ const OperationFormSchema = z.object({
       path: z.string(),
       isRequired: z.boolean(),
       isIncluded: z.boolean(),
+      visible: z.enum(["always", "never", "optional"]).optional(),
     }),
   ),
 });

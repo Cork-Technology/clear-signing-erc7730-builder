@@ -18,6 +18,13 @@ import { Trash } from "lucide-react";
 import OperationScreens from "./operationScreens";
 import { Card } from "~/components/ui/card";
 import ValidOperationButton from "./validOperationButton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 const FieldNotIncluded = ({
   form,
@@ -117,6 +124,50 @@ const FieldRequiredSwitch = ({
   />
 );
 
+const FieldVisibilitySelect = ({
+  form,
+  index,
+}: {
+  form: UseFormReturn<OperationFormType>;
+  index: number;
+}) => (
+  <FormField
+    control={form.control}
+    name={`fields.${index}.visible`}
+    render={({ field: visibleField }) => (
+      <FormItem>
+        <FormLabel>Visibility (v2)</FormLabel>
+        <Select
+          onValueChange={(val) => {
+            visibleField.onChange(val);
+            form.setValue(
+              `fields.${index}.isIncluded`,
+              val !== "never",
+            );
+            form.setValue(
+              `fields.${index}.isRequired`,
+              val === "always",
+            );
+          }}
+          value={visibleField.value ?? "always"}
+        >
+          <SelectTrigger className="h-8 w-full text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="always">Always show</SelectItem>
+            <SelectItem value="optional">Optional</SelectItem>
+            <SelectItem value="never">Never show (excluded)</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-sm text-muted-foreground">
+          Controls when this field is displayed to users during signing.
+        </p>
+      </FormItem>
+    )}
+  />
+);
+
 interface Props {
   form: UseFormReturn<OperationFormType>;
   operation: Operation | null;
@@ -149,7 +200,7 @@ const FieldForm = ({
           <Card className="flex flex-col gap-4 p-6">
             <FieldHeader field={field} form={form} index={index} />
             <FieldLabelInput form={form} index={index} />
-            <FieldRequiredSwitch form={form} index={index} />
+            <FieldVisibilitySelect form={form} index={index} />
             <FieldSelector field={field} form={form} index={index} />
           </Card>
         )}
