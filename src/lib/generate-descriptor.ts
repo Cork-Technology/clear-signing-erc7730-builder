@@ -1,4 +1,5 @@
 import { type components } from "~/generate/api-types";
+import { type SchemaVersion } from "~/store/types";
 
 type InputERC7730Descriptor = components["schemas"]["InputERC7730Descriptor"];
 type InputContractContext = components["schemas"]["InputContractContext"];
@@ -198,6 +199,22 @@ function canonicalType(input: ABIInput): string {
   return input.type;
 }
 
+function namedCanonicalType(input: ABIInput): string {
+  if (input.type === "tuple" || input.type === "tuple[]") {
+    const inner = (input.components ?? [])
+      .map((c) => `${namedCanonicalType(c)}`)
+      .join(",");
+    const base = input.type === "tuple" ? `(${inner})` : `(${inner})[]`;
+    return `${base} ${input.name}`;
+  }
+  return `${input.type} ${input.name}`;
+}
+
+function namedSignature(name: string, inputs: ABIInput[]): string {
+  const params = inputs.map((i) => namedCanonicalType(i)).join(",");
+  return `${name}(${params})`;
+}
+
 export async function fetchAbiFromExplorer(
   chainId: number,
   address: string,
@@ -243,8 +260,9 @@ export function generateDescriptor(params: {
   chainId: number;
   contractAddress: string;
   abi: ABIEntry[];
+  schemaVersion?: SchemaVersion;
 }): InputERC7730Descriptor {
-  const { chainId, contractAddress, abi } = params;
+  const { chainId, contractAddress, abi, schemaVersion = "v1" } = params;
 
   // Filter to function-type entries only
   const functions = abi.filter(
@@ -261,7 +279,9 @@ export function generateDescriptor(params: {
   const context: InputContractContext = {
     contract: {
       deployments: [deployment],
-      abi: abi as InputContractContext["contract"]["abi"],
+      ...(schemaVersion === "v1"
+        ? { abi: abi as InputContractContext["contract"]["abi"] }
+        : {}),
     },
   };
 
@@ -269,18 +289,25 @@ export function generateDescriptor(params: {
   const formats: Record<string, components["schemas"]["InputFormat"]> = {};
 
   for (const fn of functions) {
-    const selector = computeSelector(fn.name, fn.inputs);
+    const key =
+      schemaVersion === "v2"
+        ? namedSignature(fn.name, fn.inputs)
+        : computeSelector(fn.name, fn.inputs);
     const fields = buildFieldsFromInputs(fn.inputs, "");
 
-    formats[selector] = {
+    formats[key] = {
       intent: fn.name,
       fields,
     };
   }
 
+  const schemaUrl =
+    schemaVersion === "v2"
+      ? "https://eips.ethereum.org/assets/eip-7730/erc7730-v2.schema.json"
+      : "https://github.com/LedgerHQ/clear-signing-erc7730-registry/blob/master/specs/erc7730-v1.schema.json";
+
   return {
-    $schema:
-      "https://github.com/LedgerHQ/clear-signing-erc7730-registry/blob/master/specs/erc7730-v1.schema.json",
+    $schema: schemaUrl,
     context,
     metadata: {
       owner: undefined,
