@@ -223,6 +223,7 @@ export default function GitHubRepoBrowser({
   onFileSelect,
 }: GitHubRepoBrowserProps) {
   const [repoUrl, setRepoUrl] = useState("");
+  const [branch, setBranch] = useState("");
   const [tree, setTree] = useState<TreeNode[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -246,15 +247,17 @@ export default function GitHubRepoBrowser({
 
     setLoading(true);
     try {
-      const branch = parsed.branch ?? "main";
+      // Priority: input field > URL branch > default "main"
+      const branchInput = branch.trim();
+      const resolvedBranch = branchInput !== "" ? branchInput : (parsed.branch ?? "main");
 
       const res = await fetch(
-        `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/git/trees/${branch}?recursive=1`,
+        `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/git/trees/${resolvedBranch}?recursive=1`,
       );
 
       if (res.status === 404) {
-        // Try 'master' if 'main' failed and no branch was specified
-        if (!parsed.branch) {
+        // Try 'master' if default failed and no branch was explicitly specified
+        if (!branch.trim() && !parsed.branch) {
           const retryRes = await fetch(
             `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/git/trees/master?recursive=1`,
           );
@@ -266,7 +269,7 @@ export default function GitHubRepoBrowser({
           setRepoInfo({ owner: parsed.owner, repo: parsed.repo, branch: "master" });
           return;
         }
-        throw new Error("Repository or branch not found");
+        throw new Error(`Branch "${resolvedBranch}" not found`);
       }
 
       if (res.status === 403) {
@@ -279,13 +282,13 @@ export default function GitHubRepoBrowser({
         tree: { path: string; type: string }[];
       };
       setTree(buildTree(data.tree, parsed.path));
-      setRepoInfo({ owner: parsed.owner, repo: parsed.repo, branch });
+      setRepoInfo({ owner: parsed.owner, repo: parsed.repo, branch: resolvedBranch });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch");
     } finally {
       setLoading(false);
     }
-  }, [repoUrl]);
+  }, [repoUrl, branch]);
 
   return (
     <div className="space-y-3">
@@ -301,6 +304,18 @@ export default function GitHubRepoBrowser({
               void fetchTree();
             }
           }}
+        />
+        <Input
+          placeholder="branch"
+          value={branch}
+          onChange={(e) => setBranch(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              void fetchTree();
+            }
+          }}
+          className="w-[120px] shrink-0"
         />
         <Button
           type="button"
