@@ -1,5 +1,7 @@
 import { type paths, type components } from "~/generate/api-types";
 
+export type SchemaVersion = "v1" | "v2";
+
 export type Erc7730 =
   paths["/api/py/generateERC7730"]["post"]["responses"]["200"]["content"]["application/json"];
 
