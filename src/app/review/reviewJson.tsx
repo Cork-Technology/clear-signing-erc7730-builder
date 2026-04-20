@@ -7,6 +7,7 @@ import { ResponsiveDialog } from "~/components/ui/responsiveDialog";
 import { useErc7730Store } from "~/store/erc7730Provider";
 import { useToast } from "~/hooks/use-toast";
 import { removeNullValues } from "~/lib/utils";
+import { SCHEMA_URLS } from "~/lib/constants";
 
 export function ReviewJson() {
   const [open, setOpen] = React.useState(false);
@@ -17,11 +18,7 @@ export function ReviewJson() {
   const cleanedErc7730 = React.useMemo(() => {
     const cleaned = removeNullValues(erc7730);
     if (cleaned && typeof cleaned === "object" && !Array.isArray(cleaned)) {
-      const schemaUrl =
-        schemaVersion === "v2"
-          ? "https://eips.ethereum.org/assets/eip-7730/erc7730-v2.schema.json"
-          : "https://github.com/LedgerHQ/clear-signing-erc7730-registry/blob/master/specs/erc7730-v1.schema.json";
-      return { ...cleaned, $schema: schemaUrl };
+      return { ...cleaned, $schema: SCHEMA_URLS[schemaVersion] };
     }
     return cleaned;
   }, [erc7730, schemaVersion]);

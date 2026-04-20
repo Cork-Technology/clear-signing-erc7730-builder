@@ -1,5 +1,6 @@
 import { type components } from "~/generate/api-types";
 import { type SchemaVersion } from "~/store/types";
+import { SCHEMA_URLS } from "./constants";
 
 type InputERC7730Descriptor = components["schemas"]["InputERC7730Descriptor"];
 type InputContractContext = components["schemas"]["InputContractContext"];
@@ -302,10 +303,7 @@ export function generateDescriptor(params: {
     };
   }
 
-  const schemaUrl =
-    schemaVersion === "v2"
-      ? "https://eips.ethereum.org/assets/eip-7730/erc7730-v2.schema.json"
-      : "https://github.com/LedgerHQ/clear-signing-erc7730-registry/blob/master/specs/erc7730-v1.schema.json";
+  const schemaUrl = SCHEMA_URLS[schemaVersion];
 
   return {
     $schema: schemaUrl,
