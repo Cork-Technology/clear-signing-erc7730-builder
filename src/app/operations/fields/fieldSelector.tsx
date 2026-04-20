@@ -84,20 +84,7 @@ const FieldOption = ({ form, index, field }: Props) => {
   return <div>{format}</div>;
 };
 
-const possibleFormats: string[] = [
-  "raw",
-  "amount",
-  "tokenAmount",
-  "addressName",
-  "calldata",
-  "nftName",
-  "date",
-  "duration",
-  "unit",
-  "enum",
-  "chainId",
-  "tokenTicker",
-];
+const possibleFormats = ["raw", "amount", "tokenAmount", "addressName", "calldata", "nftName", "date", "duration", "unit", "enum", "chainId", "tokenTicker"] as const;
 
 const FieldSelector = ({ form, index, field }: Props) => {
   return (
