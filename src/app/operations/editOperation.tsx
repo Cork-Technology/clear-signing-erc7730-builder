@@ -12,7 +12,7 @@ import { AddressNameParametersFormSchema } from "./fields/addressNameFieldForm";
 import { UnitParametersFormSchema } from "./fields/unitFieldForm";
 import { EnumParametersFormSchema } from "./fields/enumFieldForm";
 import { CalldataParametersFormSchema } from "./fields/callDataFieldForm";
-import { type Operation, type OperationField } from "~/store/types";
+import { type OperationField } from "~/store/types";
 import { convertOperationToSchema } from "~/lib/convertOperationToSchema";
 import { updateOperationFromSchema } from "~/lib/updateOperationFromSchema";
 import { removeExcludedFields } from "~/lib/removeExcludedFields";
