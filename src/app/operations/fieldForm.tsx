@@ -24,6 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { Switch } from "~/components/ui/switch";
+import { useErc7730Store } from "~/store/erc7730Provider";
 
 const FieldNotIncluded = ({
   form,
@@ -99,6 +101,30 @@ const FieldLabelInput = ({
   />
 );
 
+const FieldRequiredSwitch = ({
+  form,
+  index,
+}: {
+  form: UseFormReturn<OperationFormType>;
+  index: number;
+}) => (
+  <FormField
+    control={form.control}
+    name={`fields.${index}.isRequired`}
+    render={({ field }) => (
+      <FormItem className="flex items-center gap-3">
+        <FormLabel className="mt-1">Required</FormLabel>
+        <FormControl>
+          <Switch
+            checked={field.value}
+            onCheckedChange={field.onChange}
+          />
+        </FormControl>
+      </FormItem>
+    )}
+  />
+);
+
 const FieldVisibilitySelect = ({
   form,
   index,
@@ -163,6 +189,7 @@ const FieldForm = ({
   onLast,
 }: Props) => {
   const { isIncluded, path } = form.watch(`fields.${index}`);
+  const schemaVersion = useErc7730Store((s) => s.schemaVersion);
 
   if (!operation) return null;
 
@@ -175,7 +202,11 @@ const FieldForm = ({
           <Card className="flex flex-col gap-4 p-6">
             <FieldHeader field={field} form={form} index={index} />
             <FieldLabelInput form={form} index={index} />
-            <FieldVisibilitySelect form={form} index={index} />
+            {schemaVersion === "v2" ? (
+              <FieldVisibilitySelect form={form} index={index} />
+            ) : (
+              <FieldRequiredSwitch form={form} index={index} />
+            )}
             <FieldSelector field={field} form={form} index={index} />
           </Card>
         )}

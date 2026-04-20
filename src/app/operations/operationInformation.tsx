@@ -15,6 +15,7 @@ import { Card } from "~/components/ui/card";
 import { type OperationMetadata } from "~/store/types";
 import { Button } from "~/components/ui/button";
 import { truncateLabel } from "~/lib/utils";
+import { useErc7730Store } from "~/store/erc7730Provider";
 
 interface Props {
   form: UseFormReturn<OperationFormType>;
@@ -23,6 +24,7 @@ interface Props {
 }
 
 const OperationInformation = ({ form, onContinue }: Props) => {
+  const schemaVersion = useErc7730Store((s) => s.schemaVersion);
   const { intent } = form.watch();
 
   return (
@@ -45,27 +47,29 @@ const OperationInformation = ({ form, onContinue }: Props) => {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="interpolatedIntent"
-            render={({ field }) => (
-              <FormItem className="mt-4">
-                <FormLabel>Interpolated Intent (v2)</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder='e.g. Send {value} to {to}'
-                    {...field}
-                    value={field.value ?? ""}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Dynamic intent with embedded field values using {"{path}"}
-                  syntax. Optional — leave empty to use only the static intent
-                  above.
-                </FormDescription>
-              </FormItem>
-            )}
-          />
+          {schemaVersion === "v2" && (
+            <FormField
+              control={form.control}
+              name="interpolatedIntent"
+              render={({ field }) => (
+                <FormItem className="mt-4">
+                  <FormLabel>Interpolated Intent</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder='e.g. Send {value} to {to}'
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Dynamic intent with embedded field values using {"{path}"}
+                    syntax. Optional — leave empty to use only the static intent
+                    above.
+                  </FormDescription>
+                </FormItem>
+              )}
+            />
+          )}
         </Card>
         <Button onClick={onContinue} className="mt-10">
           Continue
