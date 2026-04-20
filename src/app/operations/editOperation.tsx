@@ -12,7 +12,7 @@ import { AddressNameParametersFormSchema } from "./fields/addressNameFieldForm";
 import { UnitParametersFormSchema } from "./fields/unitFieldForm";
 import { EnumParametersFormSchema } from "./fields/enumFieldForm";
 import { CalldataParametersFormSchema } from "./fields/callDataFieldForm";
-import { type Operation } from "~/store/types";
+import { type Operation, type OperationField } from "~/store/types";
 import { convertOperationToSchema } from "~/lib/convertOperationToSchema";
 import { updateOperationFromSchema } from "~/lib/updateOperationFromSchema";
 import { removeExcludedFields } from "~/lib/removeExcludedFields";
@@ -204,7 +204,7 @@ const EditOperation = ({ selectedOperation }: Props) => {
             {form.watch("fields").map((field, index) => (
               <TabsContent value={field.path} key={field.path}>
                 <FieldForm
-                  field={field as unknown as Operation["fields"][number]}
+                  field={field as OperationField}
                   form={form}
                   index={index}
                   operation={operationToEdit}

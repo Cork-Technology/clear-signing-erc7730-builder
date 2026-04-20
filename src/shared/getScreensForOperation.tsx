@@ -1,7 +1,7 @@
 import { type OperationFormType } from "~/app/operations/editOperation";
 import matchFieldFormatToMockData from "~/lib/matchFormatToMockData";
 import { truncateLabel } from "~/lib/utils";
-import { type Operation } from "~/store/types";
+import { type ScreenableOperation } from "~/store/types";
 
 //removing 1 item from the screen because it's the static screen added before the form fields
 //this will have 4 items in the screen
@@ -15,7 +15,7 @@ export interface DisplayItem {
 export type Screen = DisplayItem[];
 
 export const getScreensForOperation = (
-  operation: Operation,
+  operation: ScreenableOperation,
   activeFieldPath?: string,
 ) => {
   const displays = operation.fields.filter((field) => {

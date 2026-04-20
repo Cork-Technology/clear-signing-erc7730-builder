@@ -7,6 +7,23 @@ export type Erc7730 =
 
 export type Operation = Erc7730["display"]["formats"][string];
 
+export type OperationField = Operation["fields"][number];
+
+export interface ScreenableField {
+  path?: string | null;
+  label?: string | null;
+  format?: string | null;
+  params?: unknown;
+  fields?: ScreenableField[];
+  [key: string]: unknown;
+}
+
+export interface ScreenableOperation {
+  intent?: string | Record<string, string> | null;
+  fields: ScreenableField[];
+  [key: string]: unknown;
+}
+
 export type DateField = components["schemas"]["InputDateParameters"];
 
 export type OperationMetadata = {
