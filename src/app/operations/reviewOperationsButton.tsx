@@ -14,6 +14,7 @@ import { getScreensForOperation } from "~/shared/getScreensForOperation";
 import { type OperationMetadata, type Operation } from "~/store/types";
 import { type OperationFormType } from "./editOperation";
 import { TitleScreen } from "~/components/devices/titleScreen";
+import { useErc7730Store } from "~/store/erc7730Provider";
 
 interface Props {
   operation: Operation;
@@ -22,7 +23,10 @@ interface Props {
 }
 
 const ReviewOperationsButton = ({ form, operation }: Props) => {
-  const { fields, intent } = form.watch();
+  const schemaVersion = useErc7730Store((s) => s.schemaVersion);
+  const { fields, intent, interpolatedIntent } = form.watch();
+  const displayName =
+    schemaVersion === "v2" && interpolatedIntent ? interpolatedIntent : intent;
 
   if (fields.length === 0) return null;
 
@@ -52,7 +56,7 @@ const ReviewOperationsButton = ({ form, operation }: Props) => {
             <div className="flex flex-col items-center justify-center gap-2">
               <Device.Frame>
                 <TitleScreen
-                  functionName={intent ?? "{functionName}"}
+                  functionName={displayName ?? "{functionName}"}
                   type={"transaction"}
                 />
                 <Device.Pagination current={1} total={1} />

@@ -11,10 +11,14 @@ const operationScreens = (
   screens: Screen[],
   metadata: {
     operationName: string;
+    interpolatedIntent?: string;
     metadata: Erc7730["metadata"] | null;
   },
 ) => {
   const totalPages = screens.length + 2;
+  const displayName = metadata?.interpolatedIntent
+    ? metadata.interpolatedIntent
+    : (metadata?.operationName ?? "{functionName}");
   const owner = metadata?.metadata?.owner;
   const ownerField: DisplayItem | null = owner
     ? {
@@ -31,7 +35,7 @@ const operationScreens = (
   const titleScreen = (
     <>
       <TitleScreen
-        functionName={metadata?.operationName ?? "{functionName}"}
+        functionName={displayName}
         type={"transaction"}
       />
       <Device.Pagination current={1} total={totalPages} />
@@ -48,7 +52,7 @@ const operationScreens = (
   const signScreen = (
     <>
       <SignScreen
-        intent={metadata?.operationName ?? "{intent}"}
+        intent={displayName}
         type={"transaction"}
       />
       <Device.Pagination current={totalPages} total={totalPages} />

@@ -28,5 +28,6 @@ export type DateField = components["schemas"]["InputDateParameters"];
 
 export type OperationMetadata = {
   operationName: string;
+  interpolatedIntent?: string;
   metadata: Erc7730["metadata"] | null;
 };
