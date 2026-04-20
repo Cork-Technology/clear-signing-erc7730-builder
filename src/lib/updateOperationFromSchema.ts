@@ -58,7 +58,7 @@ export function updateOperationFromSchema(
   return {
     ...operation,
     intent: updatedSchema.intent,
-    ...(updatedSchema.interpolatedIntent
+    ...(updatedSchema.interpolatedIntent !== undefined
       ? { interpolatedIntent: updatedSchema.interpolatedIntent }
       : {}),
     fields: operation.fields,

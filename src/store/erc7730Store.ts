@@ -117,20 +117,38 @@ export const createErc7730Store = () => {
         getOperationsMetadata: (name) => {
           if (!name) return null;
           const formats = get().generatedErc7730?.display?.formats ?? {};
-          const intent = formats[name]?.intent;
+          const operation = formats[name];
+          const intent = operation?.intent;
+          const interpolatedIntent =
+            operation &&
+            "interpolatedIntent" in operation &&
+            typeof (operation as Record<string, unknown>).interpolatedIntent ===
+              "string"
+              ? ((operation as Record<string, unknown>).interpolatedIntent as string)
+              : undefined;
 
           return {
             operationName: typeof intent === "string" ? intent : "",
+            ...(interpolatedIntent ? { interpolatedIntent } : {}),
             metadata: get().generatedErc7730?.metadata ?? null,
           };
         },
         getFinalOperationsMetadata: (name) => {
           if (!name) return null;
           const formats = get().finalErc7730?.display?.formats ?? {};
-          const intent = formats[name]?.intent;
+          const operation = formats[name];
+          const intent = operation?.intent;
+          const interpolatedIntent =
+            operation &&
+            "interpolatedIntent" in operation &&
+            typeof (operation as Record<string, unknown>).interpolatedIntent ===
+              "string"
+              ? ((operation as Record<string, unknown>).interpolatedIntent as string)
+              : undefined;
 
           return {
             operationName: typeof intent === "string" ? intent : "",
+            ...(interpolatedIntent ? { interpolatedIntent } : {}),
             metadata: get().finalErc7730?.metadata ?? null,
           };
         },

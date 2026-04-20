@@ -25,7 +25,9 @@ interface Props {
 
 const OperationInformation = ({ form, onContinue }: Props) => {
   const schemaVersion = useErc7730Store((s) => s.schemaVersion);
-  const { intent } = form.watch();
+  const { intent, interpolatedIntent } = form.watch();
+  const displayName =
+    schemaVersion === "v2" && interpolatedIntent ? interpolatedIntent : intent;
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -80,7 +82,7 @@ const OperationInformation = ({ form, onContinue }: Props) => {
           <div className="flex h-full w-full flex-col justify-between text-black antialiased">
             <div className="overflow-hidden break-words px-2 pt-16">
               <TitleScreen
-                functionName={truncateLabel(intent ?? "{functionName}", 30)}
+                functionName={truncateLabel(displayName ?? "{functionName}", 30)}
                 type={"transaction"}
               />
             </div>
