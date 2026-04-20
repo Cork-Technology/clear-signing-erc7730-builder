@@ -12,7 +12,7 @@ import { SCHEMA_URLS } from "~/lib/constants";
 export function ReviewJson() {
   const [open, setOpen] = React.useState(false);
   const erc7730 = useErc7730Store((s) => s.finalErc7730);
-  const schemaVersion = useErc7730Store((s) => s.getSchemaVersion)();
+  const schemaVersion = useErc7730Store((s) => s.schemaVersion);
   const { toast } = useToast();
 
   const cleanedErc7730 = React.useMemo(() => {

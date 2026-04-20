@@ -12,7 +12,6 @@ export interface Erc7730Store {
   finalErc7730: Erc7730 | null;
   schemaVersion: SchemaVersion;
   setSchemaVersion: (version: SchemaVersion) => void;
-  getSchemaVersion: () => SchemaVersion;
   setErc7730: (by: Erc7730) => void;
   getMetadata: () => Erc7730["metadata"] | null;
   getContractAddress: () => string | null;
@@ -44,7 +43,6 @@ export const createErc7730Store = () => {
         finalErc7730: null,
         schemaVersion: "v1" as SchemaVersion,
         setSchemaVersion: (version) => set({ schemaVersion: version }),
-        getSchemaVersion: () => get().schemaVersion,
         getOperationsByName: (name) => {
           if (!name) return null;
           const formats = get().generatedErc7730?.display?.formats ?? {};

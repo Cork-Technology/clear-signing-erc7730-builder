@@ -34,10 +34,9 @@ const CardErc7730 = () => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [schemaFile, setSchemaFile] = useState<Erc7730 | null>(null);
-  const { setErc7730, setSchemaVersion, getSchemaVersion } = useErc7730Store(
+  const { setErc7730, setSchemaVersion, schemaVersion } = useErc7730Store(
     (state) => state,
   );
-  const schemaVersion = getSchemaVersion();
   const router = useRouter();
 
   const {
