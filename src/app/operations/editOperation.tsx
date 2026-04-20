@@ -121,12 +121,13 @@ const EditOperation = ({ selectedOperation }: Props) => {
 
   useEffect(() => {
     const subscription = watch(() => {
-      const { intent, fields } = form.getValues();
+      const { intent, interpolatedIntent, fields } = form.getValues();
 
       if (!operationToEdit) return;
 
       const updatedOperation = updateOperationFromSchema(operationToEdit, {
         intent,
+        interpolatedIntent,
         fields,
       });
 
@@ -146,12 +147,13 @@ const EditOperation = ({ selectedOperation }: Props) => {
   if (!selectedOperation) return null;
 
   function onSubmit() {
-    const { intent, fields } = form.getValues();
+    const { intent, interpolatedIntent, fields } = form.getValues();
 
     if (!operationToEdit) return;
 
     const updatedOperation = updateOperationFromSchema(operationToEdit, {
       intent,
+      interpolatedIntent,
       fields,
     });
 
