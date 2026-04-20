@@ -10,6 +10,9 @@ import { TokenAmountFieldFormSchema } from "./fields/tokenAmountFormField";
 import { NftNameParametersFormSchema } from "./fields/nftNameFieldForm";
 import { AddressNameParametersFormSchema } from "./fields/addressNameFieldForm";
 import { UnitParametersFormSchema } from "./fields/unitFieldForm";
+import { EnumParametersFormSchema } from "./fields/enumFieldForm";
+import { CalldataParametersFormSchema } from "./fields/callDataFieldForm";
+import { type OperationField } from "~/store/types";
 import { convertOperationToSchema } from "~/lib/convertOperationToSchema";
 import { updateOperationFromSchema } from "~/lib/updateOperationFromSchema";
 import { removeExcludedFields } from "~/lib/removeExcludedFields";
@@ -25,6 +28,8 @@ const FieldParams = z.union([
   NftNameParametersFormSchema,
   AddressNameParametersFormSchema,
   UnitParametersFormSchema,
+  EnumParametersFormSchema,
+  CalldataParametersFormSchema,
   z.null(),
   z.object({}).strict(),
 ]);
@@ -35,6 +40,7 @@ const OperationFormSchema = z.object({
   intent: z.string().min(1, {
     message: "Please enter the intent of the operation.",
   }),
+  interpolatedIntent: z.string().optional(),
   fields: z.array(
     z.object({
       label: z.string(),
@@ -50,6 +56,8 @@ const OperationFormSchema = z.object({
           "duration",
           "unit",
           "enum",
+          "chainId",
+          "tokenTicker",
         ]),
         z.null(),
         z.undefined(),
@@ -58,6 +66,7 @@ const OperationFormSchema = z.object({
       path: z.string(),
       isRequired: z.boolean(),
       isIncluded: z.boolean(),
+      visible: z.enum(["always", "never", "optional"]).optional(),
     }),
   ),
 });
@@ -195,7 +204,7 @@ const EditOperation = ({ selectedOperation }: Props) => {
             {form.watch("fields").map((field, index) => (
               <TabsContent value={field.path} key={field.path}>
                 <FieldForm
-                  field={field}
+                  field={field as OperationField}
                   form={form}
                   index={index}
                   operation={operationToEdit}

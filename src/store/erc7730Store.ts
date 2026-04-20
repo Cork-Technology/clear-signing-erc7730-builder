@@ -1,10 +1,17 @@
 import { createStore } from "zustand/vanilla";
-import { type Operation, type OperationMetadata, type Erc7730 } from "./types";
+import {
+  type Operation,
+  type OperationMetadata,
+  type Erc7730,
+  type SchemaVersion,
+} from "./types";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 export interface Erc7730Store {
   generatedErc7730: Erc7730 | null;
   finalErc7730: Erc7730 | null;
+  schemaVersion: SchemaVersion;
+  setSchemaVersion: (version: SchemaVersion) => void;
   setErc7730: (by: Erc7730) => void;
   getMetadata: () => Erc7730["metadata"] | null;
   getContractAddress: () => string | null;
@@ -34,6 +41,8 @@ export const createErc7730Store = () => {
       (set, get) => ({
         generatedErc7730: null,
         finalErc7730: null,
+        schemaVersion: "v1" as SchemaVersion,
+        setSchemaVersion: (version) => set({ schemaVersion: version }),
         getOperationsByName: (name) => {
           if (!name) return null;
           const formats = get().generatedErc7730?.display?.formats ?? {};

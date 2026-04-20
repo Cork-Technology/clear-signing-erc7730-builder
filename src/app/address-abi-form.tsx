@@ -24,7 +24,7 @@ import useFunctionStore from "~/store/useOperationStore";
 import generateFromERC7730 from "./generateFromERC7730";
 import { SUPPORTED_CHAINS } from "~/lib/constants";
 import { Upload, FileJson } from "lucide-react";
-import type { Erc7730 } from "~/store/types";
+import type { Erc7730, SchemaVersion } from "~/store/types";
 import GitHubRepoBrowser from "./github-repo-browser";
 
 const CardErc7730 = () => {
@@ -34,7 +34,9 @@ const CardErc7730 = () => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [schemaFile, setSchemaFile] = useState<Erc7730 | null>(null);
-  const { setErc7730 } = useErc7730Store((state) => state);
+  const { setErc7730, setSchemaVersion, schemaVersion } = useErc7730Store(
+    (state) => state,
+  );
   const router = useRouter();
 
   const {
@@ -47,6 +49,7 @@ const CardErc7730 = () => {
         input,
         inputType: "abi",
         chainId,
+        schemaVersion,
       }),
   });
 
@@ -325,6 +328,23 @@ const CardErc7730 = () => {
           <form onSubmit={handleSubmit} className="mb-4 flex w-full flex-col gap-4">
             {inputType === "abi" && (
               <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Schema Version</Label>
+                  <Select
+                    value={schemaVersion}
+                    onValueChange={(v) =>
+                      setSchemaVersion(v as SchemaVersion)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="v1">v1 (legacy)</SelectItem>
+                      <SelectItem value="v2">v2 (current)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="chain-select">Chain</Label>
                   <Select

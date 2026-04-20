@@ -12,10 +12,13 @@ export function updateOperationFromSchema(
 
   updatedSchema.fields.forEach((field) => {
     updatedFields.set(field.path, field);
-    if (!field.isIncluded) {
+    const vis =
+      field.visible ??
+      (field.isIncluded ? (field.isRequired ? "always" : "optional") : "never");
+    if (vis === "never") {
       excludedPaths.push(field.path);
     }
-    if (field.isRequired) {
+    if (vis === "always") {
       requiredPaths.push(field.path);
     }
   });
@@ -35,7 +38,7 @@ export function updateOperationFromSchema(
             field.label = updatedField.label;
           }
           if ("format" in field && "format" in updatedField) {
-            field.format = updatedField.format;
+            (field as Record<string, unknown>).format = updatedField.format;
           }
           if ("params" in field && "params" in updatedField) {
             field.params = updatedField.params;
@@ -52,19 +55,14 @@ export function updateOperationFromSchema(
     (path) => !excludedPaths.includes(path),
   );
 
-  console.log("filteredRequiredPaths", {
-    ...operation,
-    intent: updatedSchema.intent,
-    fields: operation.fields,
-    excluded: excludedPaths.length > 0 ? excludedPaths : null,
-    required: filteredRequiredPaths.length > 0 ? filteredRequiredPaths : null,
-  });
-
   return {
     ...operation,
     intent: updatedSchema.intent,
+    ...(updatedSchema.interpolatedIntent
+      ? { interpolatedIntent: updatedSchema.interpolatedIntent }
+      : {}),
     fields: operation.fields,
     excluded: excludedPaths.length > 0 ? excludedPaths : null,
     required: filteredRequiredPaths.length > 0 ? filteredRequiredPaths : null,
-  };
+  } as Operation;
 }

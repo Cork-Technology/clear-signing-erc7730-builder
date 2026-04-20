@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "~/components/ui/button";
-import { Switch } from "~/components/ui/switch";
 import {
   FormField,
   FormItem,
@@ -18,6 +17,15 @@ import { Trash } from "lucide-react";
 import OperationScreens from "./operationScreens";
 import { Card } from "~/components/ui/card";
 import ValidOperationButton from "./validOperationButton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Switch } from "~/components/ui/switch";
+import { useErc7730Store } from "~/store/erc7730Provider";
 
 const FieldNotIncluded = ({
   form,
@@ -104,13 +112,57 @@ const FieldRequiredSwitch = ({
     control={form.control}
     name={`fields.${index}.isRequired`}
     render={({ field }) => (
+      <FormItem className="flex items-center gap-3">
+        <FormLabel className="mt-1">Required</FormLabel>
+        <FormControl>
+          <Switch
+            checked={field.value}
+            onCheckedChange={field.onChange}
+          />
+        </FormControl>
+      </FormItem>
+    )}
+  />
+);
+
+const FieldVisibilitySelect = ({
+  form,
+  index,
+}: {
+  form: UseFormReturn<OperationFormType>;
+  index: number;
+}) => (
+  <FormField
+    control={form.control}
+    name={`fields.${index}.visible`}
+    render={({ field: visibleField }) => (
       <FormItem>
-        <div className="flex items-center gap-2">
-          <FormLabel>Required</FormLabel>
-          <Switch checked={field.value} onCheckedChange={field.onChange} />
-        </div>
+        <FormLabel>Visibility (v2)</FormLabel>
+        <Select
+          onValueChange={(val) => {
+            visibleField.onChange(val);
+            form.setValue(
+              `fields.${index}.isIncluded`,
+              val !== "never",
+            );
+            form.setValue(
+              `fields.${index}.isRequired`,
+              val === "always",
+            );
+          }}
+          value={visibleField.value ?? "always"}
+        >
+          <SelectTrigger className="h-8 w-full text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="always">Always show</SelectItem>
+            <SelectItem value="optional">Optional</SelectItem>
+            <SelectItem value="never">Never show (excluded)</SelectItem>
+          </SelectContent>
+        </Select>
         <p className="text-sm text-muted-foreground">
-          The required key indicates which parameters wallets SHOULD display.
+          Controls when this field is displayed to users during signing.
         </p>
       </FormItem>
     )}
@@ -137,6 +189,7 @@ const FieldForm = ({
   onLast,
 }: Props) => {
   const { isIncluded, path } = form.watch(`fields.${index}`);
+  const schemaVersion = useErc7730Store((s) => s.schemaVersion);
 
   if (!operation) return null;
 
@@ -149,7 +202,11 @@ const FieldForm = ({
           <Card className="flex flex-col gap-4 p-6">
             <FieldHeader field={field} form={form} index={index} />
             <FieldLabelInput form={form} index={index} />
-            <FieldRequiredSwitch form={form} index={index} />
+            {schemaVersion === "v2" ? (
+              <FieldVisibilitySelect form={form} index={index} />
+            ) : (
+              <FieldRequiredSwitch form={form} index={index} />
+            )}
             <FieldSelector field={field} form={form} index={index} />
           </Card>
         )}

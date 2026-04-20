@@ -85,6 +85,7 @@ describe("convertOperationToSchema", () => {
 
     const expectedSchema = {
       intent: "exampleIntent",
+      interpolatedIntent: "",
       fields: [
         {
           label: "Main Token Id",
@@ -93,6 +94,7 @@ describe("convertOperationToSchema", () => {
           path: "#._baycPairs.[].mainTokenId",
           isRequired: false,
           isIncluded: true,
+          visible: "optional",
         },
         {
           label: "Bakc Token Id",
@@ -101,6 +103,7 @@ describe("convertOperationToSchema", () => {
           path: "#._baycPairs.[].bakcTokenId",
           isRequired: false,
           isIncluded: true,
+          visible: "optional",
         },
         {
           label: "Main Token Id",
@@ -109,6 +112,7 @@ describe("convertOperationToSchema", () => {
           path: "#._maycPairs.[].mainTokenId",
           isRequired: true,
           isIncluded: true,
+          visible: "always",
         },
         {
           label: "Bakc Token Id",
@@ -117,6 +121,7 @@ describe("convertOperationToSchema", () => {
           path: "#._maycPairs.[].bakcTokenId",
           isRequired: false,
           isIncluded: true,
+          visible: "optional",
         },
         {
           label: "Recipient",
@@ -128,6 +133,7 @@ describe("convertOperationToSchema", () => {
           path: "#._recipient",
           isRequired: false,
           isIncluded: true,
+          visible: "optional",
         },
       ],
     };
